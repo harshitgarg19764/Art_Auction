@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Auctions - kunstHaus</title>
+    <meta name="description" content="Participate in live art auctions and bid on exceptional artworks.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <h1>kunst<span class="logo-accent">Haus</span></h1>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="artists.html">Artists</a>
+                    <a href="auctions.html" class="active">Live Auctions</a>
+                    <a href="about.html">About</a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Search auctions..." class="search-input">
+                        <button class="search-btn" id="search-submit">
+                            <i data-lucide="search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right side actions -->
+                <div class="nav-actions">
+                    <button class="nav-btn" id="theme-toggle">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <!-- Auth buttons - shown when not logged in -->
+                    <div class="auth-buttons" id="auth-buttons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="signup.html" class="btn btn-gallery">Sign Up</a>
+                    </div>
+                    <!-- User menu - shown when logged in -->
+                    <div class="user-menu" id="user-menu" style="display: none;">
+                        <div class="user-info">
+                            <span class="user-name" id="user-display-name">Welcome</span>
+                            <div class="user-dropdown">
+                                <a href="account.html" class="dropdown-item">
+                                    <i data-lucide="user"></i>
+                                    My Account
+                                </a>
+                                <a href="#" class="dropdown-item" id="logout-btn">
+                                    <i data-lucide="log-out"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="nav-btn mobile-menu" id="mobile-menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">Live Auctions</h1>
+            <p class="page-subtitle">Participate in real-time bidding on exceptional artworks from talented artists</p>
+        </div>
+    </section>
+
+    <!-- Auction Stats -->
+    <section class="auction-stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i data-lucide="clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Live Now</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i data-lucide="calendar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">This Week</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i data-lucide="users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">247</div>
+                        <div class="stat-label">Active Bidders</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">$45K</div>
+                        <div class="stat-label">Highest Bid Today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <section class="filter-bar">
+        <div class="container">
+            <div class="filter-content">
+                <div class="filter-group">
+                    <label for="status-filter">Status:</label>
+                    <select id="status-filter" class="filter-select">
+                        <option value="all">All Auctions</option>
+                        <option value="live">Live Now</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ended">Recently Ended</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="category-filter">Category:</label>
+                    <select id="category-filter" class="filter-select">
+                        <option value="all">All Categories</option>
+                        <option value="abstract">Abstract</option>
+                        <option value="landscape">Landscape</option>
+                        <option value="portrait">Portrait</option>
+                        <option value="digital">Digital Art</option>
+                        <option value="sculpture">Sculpture</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="price-filter">Starting Bid:</label>
+                    <select id="price-filter" class="filter-select">
+                        <option value="all">All Prices</option>
+                        <option value="0-500">$0 - $500</option>
+                        <option value="500-2000">$500 - $2,000</option>
+                        <option value="2000-5000">$2,000 - $5,000</option>
+                        <option value="5000+">$5,000+</option>
+                    </select>
+                </div>
+                
+                <div class="results-count" id="results-count">
+                    Showing 8 auctions
+                </div>
+                
+                <button class="btn btn-outline" onclick="window.refreshAuctions()" style="margin-left: 1rem;">
+                    <i data-lucide="refresh-cw"></i>
+                    Refresh
+                </button>
+                
+                <button class="btn btn-outline" onclick="showDebugInfo()" style="margin-left: 0.5rem;">
+                    <i data-lucide="info"></i>
+                    Debug
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auctions Grid -->
+    <main class="container" style="padding: 2rem 1rem 4rem;">
+        <div class="auction-grid" id="auction-grid">
+            <!-- Auctions will be populated by JavaScript -->
+        </div>
+        
+        <!-- Load More Button -->
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn btn-outline" id="load-more" style="padding: 1rem 2rem;">
+                Load More Auctions
+                <i data-lucide="chevron-down"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- Enhanced Bidding Modal -->
+    <div class="modal" id="bidding-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content bidding-modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h2 class="modal-title">Place Your Bid</h2>
+                <button class="modal-close" id="bidding-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            
+            <!-- Artwork Preview Section -->
+            <div class="artwork-preview-section">
+                <div class="artwork-image-container">
+                    <img id="bidding-artwork-image" src="" alt="" class="artwork-preview-image">
+                    <div class="artwork-status-badge" id="artwork-status">Live Auction</div>
+                </div>
+                <div class="artwork-details">
+                    <div class="artwork-info">
+                        <h3 id="bidding-artwork-title" class="artwork-title">Artwork Title</h3>
+                        <p id="bidding-artwork-artist" class="artwork-artist">by Artist Name</p>
+                        <div class="artwork-meta">
+                            <span id="bidding-artwork-category" class="artwork-category">Abstract</span>
+                            <span class="artwork-separator">•</span>
+                            <span id="bidding-artwork-year" class="artwork-year">2024</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Bidding Stats -->
+                    <div class="bidding-stats">
+                        <div class="stat-item current-bid-stat">
+                            <div class="stat-label">Current Highest Bid</div>
+                            <div id="current-bid-amount" class="stat-value current-bid-value">$0</div>
+                        </div>
+                        <div class="stat-item bid-count-stat">
+                            <div class="stat-label">Total Bids</div>
+                            <div id="total-bid-count" class="stat-value">0</div>
+                        </div>
+                        <div class="stat-item watchers-stat">
+                            <div class="stat-label">Watching</div>
+                            <div id="watchers-count" class="stat-value">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Timer Section -->
+            <div class="auction-timer-section">
+                <div class="timer-container">
+                    <div class="timer-label">
+                        <i data-lucide="clock"></i>
+                        Time Remaining
+                    </div>
+                    <div class="timer-display" id="auction-timer">05:23:45</div>
+                </div>
+            </div>
+            
+            <!-- Bid History Section -->
+            <div class="bid-history-section">
+                <h4 class="section-title">
+                    <i data-lucide="activity"></i>
+                    Recent Bidding Activity
+                </h4>
+                <div id="bid-history-list" class="bid-history-list">
+                    <div class="loading-state">
+                        <i data-lucide="loader-2"></i>
+                        Loading bid history...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bidding Form -->
+            <form id="bidding-form" class="bidding-form">
+                <div class="form-section">
+                    <div class="form-group">
+                        <label class="form-label" for="bid-amount">
+                            <i data-lucide="dollar-sign"></i>
+                            Your Bid Amount
+                        </label>
+                        <div class="bid-input-container">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="bid-amount" class="form-input bid-input" 
+                                   required min="0" step="50" placeholder="Enter your bid">
+                        </div>
+                        <div class="bid-info">
+                            <small>Minimum bid: $<span id="minimum-bid">0</span></small>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Bid Suggestions -->
+                    <div class="bid-suggestions-container">
+                        <div class="suggestions-label">Quick bid amounts:</div>
+                        <div id="bid-suggestions" class="bid-suggestions">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancel-bid">
+                        <i data-lucide="x"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-hero bid-submit-btn">
+                        <i data-lucide="gavel"></i>
+                        Place Bid
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="auth-manager.js"></script>
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="script.js"></script>
+    <script src="auctions-enhanced.js"></script>
+</body>
+</html>

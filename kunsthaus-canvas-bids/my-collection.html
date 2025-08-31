@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Collection - kunstHaus</title>
+    <meta name="description" content="Manage your personal art collection on kunstHaus">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html" style="text-decoration: none;">
+                        <h1>kunst<span class="logo-accent">Haus</span></h1>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="artists.html">Artists</a>
+                    <a href="auctions.html">Live Auctions</a>
+                    <a href="about.html">About</a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Search your collection..." class="search-input">
+                        <button class="search-btn" id="search-submit">
+                            <i data-lucide="search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right side actions -->
+                <div class="nav-actions">
+                    <button class="nav-btn" id="theme-toggle">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <!-- Auth buttons - shown when not logged in -->
+                    <div class="auth-buttons" id="auth-buttons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="signup.html" class="btn btn-gallery">Sign Up</a>
+                    </div>
+                    <!-- User menu - shown when logged in -->
+                    <div class="user-menu" id="user-menu" style="display: none;">
+                        <div class="user-info">
+                            <span class="user-name" id="user-name">Welcome</span>
+                            <div class="user-dropdown">
+                                <a href="account.html" class="dropdown-item">
+                                    <i data-lucide="user"></i>
+                                    My Account
+                                </a>
+                                <a href="add-artwork.html" class="dropdown-item" id="add-artwork-link" style="display: none;">
+                                    <i data-lucide="plus"></i>
+                                    Add Artwork
+                                </a>
+                                <a href="my-collection.html" class="dropdown-item" id="my-collection-link" style="display: none;">
+                                    <i data-lucide="heart"></i>
+                                    My Collection
+                                </a>
+                                <button class="dropdown-item logout-btn" id="logout-btn">
+                                    <i data-lucide="log-out"></i>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <section class="page-header">
+            <div class="container">
+                <div class="header-content">
+                    <h1 class="page-title">My Collection</h1>
+                    <p class="page-description">Manage and showcase your personal art collection</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-hero" id="add-to-collection-btn">
+                        <i data-lucide="plus"></i>
+                        Add to Collection
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Collection Stats -->
+        <section class="collection-stats">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="image"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="total-artworks">0</div>
+                            <div class="stat-label">Artworks</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="total-value">$0</div>
+                            <div class="stat-label">Collection Value</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="total-artists">0</div>
+                            <div class="stat-label">Artists</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="calendar"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="latest-addition">-</div>
+                            <div class="stat-label">Latest Addition</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Collection Filters -->
+        <section class="collection-filters">
+            <div class="container">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label for="category-filter">Category:</label>
+                        <select id="category-filter" class="filter-select">
+                            <option value="">All Categories</option>
+                            <option value="abstract">Abstract</option>
+                            <option value="landscape">Landscape</option>
+                            <option value="portrait">Portrait</option>
+                            <option value="contemporary">Contemporary</option>
+                            <option value="digital">Digital Art</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sort-filter">Sort by:</label>
+                        <select id="sort-filter" class="filter-select">
+                            <option value="date-desc">Newest First</option>
+                            <option value="date-asc">Oldest First</option>
+                            <option value="price-desc">Highest Price</option>
+                            <option value="price-asc">Lowest Price</option>
+                            <option value="title">Title A-Z</option>
+                        </select>
+                    </div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="grid">
+                            <i data-lucide="grid-3x3"></i>
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <i data-lucide="list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Collection Grid -->
+        <section class="collection-content">
+            <div class="container">
+                <div class="collection-grid" id="collection-grid">
+                    <!-- Collection items will be populated by JavaScript -->
+                </div>
+                
+                <!-- Empty State -->
+                <div class="empty-collection" id="empty-collection" style="display: none;">
+                    <div class="empty-icon">
+                        <i data-lucide="image-off"></i>
+                    </div>
+                    <h3>Your collection is empty</h3>
+                    <p>Start building your art collection by adding artworks you love</p>
+                    <button class="btn btn-hero" id="browse-gallery-btn">
+                        <i data-lucide="search"></i>
+                        Browse Gallery
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add to Collection Modal -->
+    <div class="modal" id="add-collection-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add to Collection</h2>
+                <button class="modal-close" onclick="closeModal('add-collection-modal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="add-collection-form">
+                <div class="form-group">
+                    <label class="form-label" for="artwork-title">Artwork Title</label>
+                    <input type="text" id="artwork-title" class="form-input" required 
+                           placeholder="Enter artwork title">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="artist-name">Artist Name</label>
+                    <input type="text" id="artist-name" class="form-input" required 
+                           placeholder="Enter artist name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="artwork-category">Category</label>
+                    <select id="artwork-category" class="form-input" required>
+                        <option value="">Select category</option>
+                        <option value="abstract">Abstract</option>
+                        <option value="landscape">Landscape</option>
+                        <option value="portrait">Portrait</option>
+                        <option value="contemporary">Contemporary</option>
+                        <option value="digital">Digital Art</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="purchase-price">Purchase Price</label>
+                    <input type="number" id="purchase-price" class="form-input" 
+                           placeholder="Enter purchase price" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="purchase-date">Purchase Date</label>
+                    <input type="date" id="purchase-date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="artwork-notes">Notes</label>
+                    <textarea id="artwork-notes" class="form-input" rows="3" 
+                              placeholder="Add any notes about this artwork..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="artwork-image">Image URL</label>
+                    <input type="url" id="artwork-image" class="form-input" 
+                           placeholder="Enter image URL">
+                </div>
+                <button type="submit" class="btn btn-hero form-submit">Add to Collection</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="auth-manager.js"></script>
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="script.js"></script>
+    <script src="my-collection.js"></script>
+</body>
+</html>

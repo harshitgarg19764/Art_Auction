@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Artwork - kunstHaus</title>
+    <meta name="description" content="Add your artwork to kunstHaus and reach art collectors worldwide.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <h1>kunst<span class="logo-accent">Haus</span></h1>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="artists.html">Artists</a>
+                    <a href="auctions.html">Live Auctions</a>
+                    <a href="about.html">About</a>
+                </div>
+
+                <!-- Right side actions -->
+                <div class="nav-actions">
+                    <button class="nav-btn" id="theme-toggle">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <!-- Auth buttons - shown when not logged in -->
+                    <div class="auth-buttons" id="auth-buttons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="signup.html" class="btn btn-gallery">Sign Up</a>
+                    </div>
+                    <!-- User menu - shown when logged in -->
+                    <div class="user-menu" id="user-menu" style="display: none;">
+                        <div class="user-info">
+                            <span class="user-name" id="user-display-name">Welcome</span>
+                            <div class="user-dropdown">
+                                <a href="account.html" class="dropdown-item">
+                                    <i data-lucide="user"></i>
+                                    My Account
+                                </a>
+                                <a href="#" class="dropdown-item" id="logout-btn">
+                                    <i data-lucide="log-out"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="nav-btn mobile-menu" id="mobile-menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">Add Your Artwork</h1>
+            <p class="page-subtitle">Share your creativity with art collectors around the world</p>
+        </div>
+    </section>
+
+    <!-- Add Artwork Form -->
+    <main class="container" style="padding: 2rem 1rem 4rem;">
+        <div class="add-artwork-container">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2>Artwork Details</h2>
+                    <p>Fill in the information about your artwork to list it on kunstHaus</p>
+                </div>
+                
+                <form id="add-artwork-form" class="artwork-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-title">
+                                <i data-lucide="type"></i>
+                                Artwork Title *
+                            </label>
+                            <input type="text" id="artwork-title" class="form-input" required 
+                                   placeholder="Enter the title of your artwork">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-description">
+                                <i data-lucide="file-text"></i>
+                                Description
+                            </label>
+                            <textarea id="artwork-description" class="form-input" rows="4" 
+                                      placeholder="Describe your artwork, inspiration, technique, etc."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-price">
+                                <i data-lucide="dollar-sign"></i>
+                                Starting Price (USD) *
+                            </label>
+                            <input type="number" id="artwork-price" class="form-input" required 
+                                   min="1" step="1" placeholder="Enter starting bid price">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-category">
+                                <i data-lucide="tag"></i>
+                                Category
+                            </label>
+                            <select id="artwork-category" class="form-input">
+                                <option value="abstract">Abstract</option>
+                                <option value="landscape">Landscape</option>
+                                <option value="portrait">Portrait</option>
+                                <option value="digital">Digital Art</option>
+                                <option value="sculpture">Sculpture</option>
+                                <option value="photography">Photography</option>
+                                <option value="mixed-media">Mixed Media</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-medium">
+                                <i data-lucide="brush"></i>
+                                Medium
+                            </label>
+                            <input type="text" id="artwork-medium" class="form-input" 
+                                   placeholder="e.g., Oil on Canvas, Digital, Acrylic, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-dimensions">
+                                <i data-lucide="maximize"></i>
+                                Dimensions
+                            </label>
+                            <input type="text" id="artwork-dimensions" class="form-input" 
+                                   placeholder="e.g., 24&quot; x 36&quot; or 60cm x 90cm">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-year">
+                                <i data-lucide="calendar"></i>
+                                Year Created
+                            </label>
+                            <input type="number" id="artwork-year" class="form-input" 
+                                   min="1900" max="2024" placeholder="2024">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-condition">
+                                <i data-lucide="shield-check"></i>
+                                Condition
+                            </label>
+                            <select id="artwork-condition" class="form-input">
+                                <option value="excellent">Excellent</option>
+                                <option value="very-good">Very Good</option>
+                                <option value="good">Good</option>
+                                <option value="fair">Fair</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="artwork-image">
+                                <i data-lucide="image"></i>
+                                Artwork Image URL
+                            </label>
+                            <input type="url" id="artwork-image" class="form-input" 
+                                   placeholder="https://example.com/your-artwork-image.jpg">
+                            <small class="form-help">
+                                Provide a high-quality image URL of your artwork. For best results, use images that are at least 800x600 pixels.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i data-lucide="info"></i>
+                                Additional Information
+                            </label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="artwork-signed">
+                                    <span class="checkmark"></span>
+                                    Artwork is signed
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="artwork-framed">
+                                    <span class="checkmark"></span>
+                                    Artwork is framed
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="artwork-certificate">
+                                    <span class="checkmark"></span>
+                                    Certificate of authenticity included
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="window.history.back()">
+                            <i data-lucide="arrow-left"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-hero">
+                            <i data-lucide="plus"></i>
+                            Add Artwork
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="preview-card">
+                <div class="preview-header">
+                    <h3>Preview</h3>
+                    <p>See how your artwork will appear to collectors</p>
+                </div>
+                <div class="artwork-preview" id="artwork-preview">
+                    <div class="preview-image">
+                        <img id="preview-img" src="https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop" alt="Artwork Preview">
+                    </div>
+                    <div class="preview-info">
+                        <h4 id="preview-title">Artwork Title</h4>
+                        <p id="preview-artist">by Your Name</p>
+                        <div class="preview-price">
+                            <span class="price-label">Starting Bid:</span>
+                            <span id="preview-price-amount">$0</span>
+                        </div>
+                        <div class="preview-details">
+                            <span id="preview-medium">Medium</span>
+                            <span id="preview-dimensions">Dimensions</span>
+                            <span id="preview-year">Year</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="auth-manager.js"></script>
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="script.js"></script>
+    <script src="add-artwork.js"></script>
+</body>
+</html>

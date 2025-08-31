@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - kunstHaus</title>
+    <meta name="description" content="Learn about kunstHaus: our mission, story, and the creators behind the platform.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html" style="text-decoration: none;">
+                        <h1>kunst<span class="logo-accent">Haus</span></h1>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="artists.html">Artists</a>
+                    <a href="auctions.html">Live Auctions</a>
+                    <a href="about.html" class="active">About</a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-container" style="display:none;"></div>
+
+                <!-- Right side actions -->
+                <div class="nav-actions">
+                    <button class="nav-btn" id="theme-toggle">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <!-- Auth buttons - shown when not logged in -->
+                    <div class="auth-buttons" id="auth-buttons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="signup.html" class="btn btn-gallery">Sign Up</a>
+                    </div>
+                    <!-- User menu - shown when logged in -->
+                    <div class="user-menu" id="user-menu" style="display: none;">
+                        <div class="user-info">
+                            <span class="user-name" id="user-display-name">Welcome</span>
+                            <div class="user-dropdown">
+                                <a href="account.html" class="dropdown-item">
+                                    <i data-lucide="user"></i>
+                                    My Account
+                                </a>
+                                <button class="dropdown-item logout-btn" id="logout-btn">
+                                    <i data-lucide="log-out"></i>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="nav-btn mobile-menu" id="mobile-menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">About kunstHaus</h1>
+            <p class="page-subtitle">Where art finds its home — connecting artists and collectors through beautiful, thoughtful experiences</p>
+        </div>
+    </section>
+
+    <main class="container" style="padding: 2rem 1rem 4rem;">
+        <!-- Mission -->
+        <section class="section-header" style="margin-top: 1rem;">
+            <h2>Our Mission</h2>
+            <p>Empower artists and delight collectors by making discovery and bidding simple, inspiring, and accessible to everyone.</p>
+        </section>
+
+        <!-- Story -->
+        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+            <div class="card" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem;">
+                <h3 style="margin-bottom: 0.5rem;">The Story</h3>
+                <p style="color: var(--muted-foreground);">kunstHaus began as a shared vision to build a modern, welcoming space for art online — blending the warmth of a gallery with the simplicity of great design.</p>
+            </div>
+            <div class="card" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem;">
+                <h3 style="margin-bottom: 0.5rem;">What We Value</h3>
+                <ul style="color: var(--muted-foreground); line-height: 1.8; padding-left: 1rem;">
+                    <li>Design that serves the art</li>
+                    <li>Trust, transparency, and fair opportunity</li>
+                    <li>Performance and accessibility for all</li>
+                </ul>
+            </div>
+            <div class="card" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem;">
+                <h3 style="margin-bottom: 0.5rem;">What We’re Building</h3>
+                <p style="color: var(--muted-foreground);">A seamless way to explore, follow artists, and participate in live auctions — with thoughtful details from light/dark themes to graceful animations.</p>
+            </div>
+        </section>
+
+        <!-- Team -->
+        <section class="section-header">
+            <h2>Meet the Creators</h2>
+            <p>The talented minds behind kunstHaus</p>
+        </section>
+
+        <section class="artist-grid" style="margin-bottom: 3rem;">
+            <div class="artist-card" style="position: relative;">
+                <img src="https://api.dicebear.com/7.x/initials/svg?seed=Harshit%20Garg" alt="Harshit Garg" class="artist-avatar" loading="lazy">
+                <h3 class="artist-name">Harshit Garg</h3>
+                <p class="artist-specialty">Creator</p>
+            </div>
+            <div class="artist-card" style="position: relative;">
+                <img src="https://api.dicebear.com/7.x/initials/svg?seed=Harshit%20Ved%20Vyas" alt="Harshit Ved Vyas" class="artist-avatar" loading="lazy">
+                <h3 class="artist-name">Harshit Ved Vyas</h3>
+                <p class="artist-specialty">Creator</p>
+            </div>
+            <div class="artist-card" style="position: relative;">
+                <img src="https://api.dicebear.com/7.x/initials/svg?seed=Harshit%20Rajput" alt="Harshit Rajput" class="artist-avatar" loading="lazy">
+                <h3 class="artist-name">Harshit Rajput</h3>
+                <p class="artist-specialty">Creator</p>
+            </div>
+            <div class="artist-card" style="position: relative;">
+                <img src="https://api.dicebear.com/7.x/initials/svg?seed=Himanshu%20Rajput" alt="Himanshu Rajput" class="artist-avatar" loading="lazy">
+                <h3 class="artist-name">Himanshu Rajput</h3>
+                <p class="artist-specialty">Creator</p>
+            </div>
+        </section>
+
+        <!-- Callout -->
+        <section style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; display: grid; gap: 1rem; align-items: center;">
+            <h3 style="margin: 0;">Join the kunstHaus community</h3>
+            <p style="color: var(--muted-foreground); margin: 0;">Explore the gallery, meet artists, and bid on the pieces you love.</p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="gallery.html" class="btn btn-outline">Browse Gallery</a>
+                <a href="auctions.html" class="btn btn-gallery">View Live Auctions</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>kunstHaus</h3>
+                    <p>Where art finds its home. Connecting artists with collectors in a vibrant creative community.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="artists.html">Artists</a></li>
+                        <li><a href="auctions.html">Live Auctions</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link">
+                            <i data-lucide="instagram"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i data-lucide="twitter"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i data-lucide="facebook"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 kunstHaus. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="auth-manager.js"></script>
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

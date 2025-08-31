@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug - kunstHaus</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status-item {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #ccc;
+        }
+        .status-success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .status-info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>kunstHaus Authentication Debug</h1>
+        
+        <div id="status-container">
+            <div class="status-item status-info">
+                <strong>Checking authentication system...</strong>
+            </div>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="clearResults()">Clear Results</button>
+            <button onclick="showLocalStorage()">Show Local Storage</button>
+        </div>
+        
+        <div id="localStorage-info" style="display: none;">
+            <h3>Local Storage Contents:</h3>
+            <div class="code" id="localStorage-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const statusContainer = document.getElementById('status-container');
+        
+        function addStatus(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status-item status-${type}`;
+            div.innerHTML = message;
+            statusContainer.appendChild(div);
+        }
+        
+        function clearResults() {
+            statusContainer.innerHTML = '';
+        }
+        
+        function showLocalStorage() {
+            const info = document.getElementById('localStorage-info');
+            const content = document.getElementById('localStorage-content');
+            
+            const storageData = {
+                kunsthaus_user: localStorage.getItem('kunsthaus_user'),
+                kunsthaus_theme: localStorage.getItem('kunsthaus_theme'),
+                kunsthaus_preferences: localStorage.getItem('kunsthaus_preferences')
+            };
+            
+            content.textContent = JSON.stringify(storageData, null, 2);
+            info.style.display = 'block';
+        }
+        
+        async function testBackendHealth() {
+            try {
+                const response = await fetch('/api/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    addStatus('✅ Backend is running and healthy', 'success');
+                    return true;
+                } else {
+                    addStatus(`❌ Backend health check failed: ${response.status}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addStatus(`❌ Cannot connect to backend: ${error.message}`, 'error');
+                addStatus('💡 Make sure to start the backend server with: <code>python start_backend.py</code>', 'info');
+                return false;
+            }
+        }
+        
+        async function testAuthManager() {
+            if (window.authManager) {
+                addStatus('✅ AuthManager is loaded', 'success');
+                
+                const isAuth = window.authManager.isAuthenticated();
+                const currentUser = window.authManager.getCurrentUser();
+                
+                if (isAuth && currentUser) {
+                    addStatus(`✅ User is authenticated: ${currentUser.name} (${currentUser.email})`, 'success');
+                } else {
+                    addStatus('ℹ️ No user is currently authenticated', 'info');
+                }
+                
+                return true;
+            } else {
+                addStatus('❌ AuthManager is not loaded - check if js/auth.js is included', 'error');
+                return false;
+            }
+        }
+        
+        async function testScriptLoading() {
+            const scripts = [
+                'js/auth.js',
+                'auth.js',
+                'script.js'
+            ];
+            
+            let allLoaded = true;
+            
+            for (const script of scripts) {
+                const scriptElements = document.querySelectorAll(`script[src*="${script}"]`);
+                if (scriptElements.length > 0) {
+                    addStatus(`✅ ${script} is included`, 'success');
+                } else {
+                    addStatus(`⚠️ ${script} is not found in page`, 'error');
+                    allLoaded = false;
+                }
+            }
+            
+            return allLoaded;
+        }
+        
+        async function testAuthEndpoint() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.status === 401) {
+                    addStatus('ℹ️ Auth endpoint returns 401 (not authenticated) - this is normal', 'info');
+                    return true;
+                } else if (response.ok) {
+                    const data = await response.json();
+                    addStatus(`✅ Auth endpoint returns user data: ${data.user.name}`, 'success');
+                    return true;
+                } else {
+                    addStatus(`❌ Auth endpoint error: ${response.status}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addStatus(`❌ Auth endpoint test failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function runAllTests() {
+            clearResults();
+            addStatus('🔍 Running authentication system diagnostics...', 'info');
+            
+            // Test 1: Backend Health
+            const backendOk = await testBackendHealth();
+            
+            // Test 2: Script Loading
+            const scriptsOk = await testScriptLoading();
+            
+            // Test 3: AuthManager
+            const authManagerOk = await testAuthManager();
+            
+            // Test 4: Auth Endpoint
+            const authEndpointOk = await testAuthEndpoint();
+            
+            // Summary
+            const allPassed = backendOk && scriptsOk && authManagerOk && authEndpointOk;
+            
+            if (allPassed) {
+                addStatus('🎉 All tests passed! Authentication system is working correctly.', 'success');
+                addStatus('💡 If you\'re still having issues, try signing up at <a href="signup.html">signup.html</a>', 'info');
+            } else {
+                addStatus('⚠️ Some tests failed. Check the issues above and follow the suggestions.', 'error');
+            }
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+    
+    <!-- Include the auth scripts to test them -->
+    <script src="js/auth.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artists - kunstHaus</title>
+    <meta name="description" content="Meet the talented artists behind our exceptional artworks.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <h1>kunst<span class="logo-accent">Haus</span></h1>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="artists.html" class="active">Artists</a>
+                    <a href="auctions.html">Live Auctions</a>
+                    <a href="about.html">About</a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Search artists..." class="search-input">
+                        <button class="search-btn" id="search-submit">
+                            <i data-lucide="search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right side actions -->
+                <div class="nav-actions">
+                    <button class="nav-btn" id="theme-toggle">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <!-- Auth buttons - shown when not logged in -->
+                    <div class="auth-buttons" id="auth-buttons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="signup.html" class="btn btn-gallery">Sign Up</a>
+                    </div>
+                    <!-- User menu - shown when logged in -->
+                    <div class="user-menu" id="user-menu" style="display: none;">
+                        <div class="user-info">
+                            <span class="user-name" id="user-display-name">Welcome</span>
+                            <div class="user-dropdown">
+                                <a href="account.html" class="dropdown-item">
+                                    <i data-lucide="user"></i>
+                                    My Account
+                                </a>
+                                <a href="#" class="dropdown-item" id="logout-btn">
+                                    <i data-lucide="log-out"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="nav-btn mobile-menu" id="mobile-menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">Our Artists</h1>
+            <p class="page-subtitle">Meet the talented creators behind our exceptional artworks and discover their unique artistic journeys</p>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <section class="filter-bar">
+        <div class="container">
+            <div class="filter-content">
+                <div class="filter-group">
+                    <label for="specialty-filter">Specialty:</label>
+                    <select id="specialty-filter" class="filter-select">
+                        <option value="all">All Specialties</option>
+                        <option value="abstract">Abstract Expressionism</option>
+                        <option value="contemporary">Contemporary</option>
+                        <option value="landscape">Landscape</option>
+                        <option value="portrait">Portrait</option>
+                        <option value="digital">Digital Art</option>
+                        <option value="sculpture">Sculpture</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="experience-filter">Experience:</label>
+                    <select id="experience-filter" class="filter-select">
+                        <option value="all">All Levels</option>
+                        <option value="emerging">Emerging (0-5 years)</option>
+                        <option value="established">Established (5-15 years)</option>
+                        <option value="master">Master (15+ years)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="location-filter">Location:</label>
+                    <select id="location-filter" class="filter-select">
+                        <option value="all">All Locations</option>
+                        <option value="local">Local Artists</option>
+                        <option value="national">National</option>
+                        <option value="international">International</option>
+                    </select>
+                </div>
+                
+                <div class="results-count" id="results-count">
+                    Showing 12 artists
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Artists Grid -->
+    <main class="container" style="padding: 2rem 1rem 4rem;">
+        <div class="artist-grid" id="artists-grid">
+            <!-- Artists will be populated by JavaScript -->
+        </div>
+        
+        <!-- Load More Button -->
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn btn-outline" id="load-more" style="padding: 1rem 2rem;">
+                Load More Artists
+                <i data-lucide="chevron-down"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- Login Modal -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Welcome Back</h2>
+                <button class="modal-close" id="login-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">Email</label>
+                    <input type="email" id="login-email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-hero form-submit">Sign In</button>
+            </form>
+            <div class="form-footer">
+                <p>Don't have an account? <a href="#" id="switch-to-signup">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal" id="signup-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Join kunstHaus</h2>
+                <button class="modal-close" id="signup-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label class="form-label" for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signup-email">Email</label>
+                    <input type="email" id="signup-email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signup-password">Password</label>
+                    <input type="password" id="signup-password" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signup-confirm">Confirm Password</label>
+                    <input type="password" id="signup-confirm" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-gallery form-submit">Create Account</button>
+            </form>
+            <div class="form-footer">
+                <p>Already have an account? <a href="#" id="switch-to-login">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="auth-manager.js"></script>
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="script.js"></script>
+    <script src="artists.js"></script>
+</body>
+</html>

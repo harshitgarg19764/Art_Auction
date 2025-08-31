@@ -1,0 +1,264 @@
+// Gallery Page Functionality
+
+// Gallery artworks data - will be populated from backend
+let galleryArtworks = [];
+let filteredArtworks = [];
+let displayedCount = 8;
+
+// Initialize gallery page
+document.addEventListener('DOMContentLoaded', function() {
+    loadArtworksFromBackend();
+    initFilters();
+    initSearch();
+    initLoadMore();
+    
+    // Auto-refresh every 30 seconds to show new artworks
+    setInterval(() => {
+        console.log('Auto-refreshing gallery...');
+        loadArtworksFromBackend();
+    }, 30000);
+    
+    // Check if we came from add-artwork page
+    if (document.referrer.includes('add-artwork.html')) {
+        console.log('Came from add-artwork page, showing welcome message');
+        setTimeout(() => {
+            showNotification('Welcome to the gallery! Your new artwork should be visible here.', 'success');
+        }, 1000);
+    }
+});
+
+// Make this function globally accessible for refreshing
+window.loadArtworksFromBackend = loadArtworksFromBackend;
+
+async function loadArtworksFromBackend() {
+    try {
+        const response = await fetch('/api/artworks', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load artworks');
+        }
+        
+        const data = await response.json();
+        
+        // Transform backend data to gallery format
+        galleryArtworks = data.artworks.map(artwork => {
+            console.log('Processing artwork:', artwork); // Debug log
+            return {
+                id: artwork.id,
+                title: artwork.title,
+                artist: artwork.artist || 'Unknown Artist',
+                price: artwork.price || 0,
+                image: artwork.image || 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop',
+                category: artwork.category || 'abstract',
+                description: artwork.description || 'Beautiful artwork available for bidding.',
+                status: 'active' // Add default status
+            };
+        });
+        
+        // Don't use sample data - only show manually added artworks
+        if (galleryArtworks.length === 0) {
+            console.log('No artworks found in database');
+        }
+        
+        filteredArtworks = [...galleryArtworks];
+        initGalleryGrid();
+        
+    } catch (error) {
+        console.error('Error loading artworks:', error);
+        // Don't show sample data on error - keep empty
+        galleryArtworks = [];
+        filteredArtworks = [];
+        initGalleryGrid();
+    }
+}
+
+// getSampleArtworks function removed - no sample data needed
+
+function initGalleryGrid() {
+    displayArtworks(filteredArtworks.slice(0, displayedCount));
+    updateResultsCount();
+}
+
+function displayArtworks(artworks) {
+    const galleryGrid = document.getElementById('gallery-grid');
+    galleryGrid.innerHTML = '';
+    
+    if (artworks.length === 0) {
+        // Show empty state
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+            <div class="empty-state-content">
+                <i data-lucide="image" class="empty-icon"></i>
+                <h3>No Artworks Available</h3>
+                <p>There are currently no artworks in the gallery. Artists can add their work to showcase here!</p>
+                <div class="empty-actions">
+                    <button class="btn btn-hero" onclick="window.loadArtworksFromBackend()">
+                        <i data-lucide="refresh-cw"></i>
+                        Refresh Gallery
+                    </button>
+                </div>
+            </div>
+        `;
+        galleryGrid.appendChild(emptyState);
+        
+        // Initialize Lucide icons
+        if (window.lucide && typeof lucide.createIcons === 'function') {
+            lucide.createIcons();
+        }
+    } else {
+        artworks.forEach(artwork => {
+            const artworkCard = createEnhancedArtworkCard(artwork);
+            galleryGrid.appendChild(artworkCard);
+        });
+    }
+}
+
+function createEnhancedArtworkCard(artwork) {
+    const card = document.createElement('div');
+    card.className = 'artwork-card';
+    
+    const statusClass = `status-${artwork.status}`;
+    const statusText = artwork.status === 'active' ? 'Available' : 
+                     artwork.status === 'sold' ? 'Sold' : 'Featured';
+    
+    const buttonText = artwork.status === 'sold' ? 'Sold Out' : 'Place Bid';
+    const buttonClass = artwork.status === 'sold' ? 'artwork-bid sold' : 'artwork-bid';
+    const buttonDisabled = artwork.status === 'sold' ? 'disabled' : '';
+    
+    card.innerHTML = `
+        <div class="artwork-status ${statusClass}">${statusText}</div>
+        <img src="${artwork.image}" alt="${artwork.title}" class="artwork-image" loading="lazy" 
+             onerror="this.src='https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop'">
+        <div class="artwork-info">
+            <h3 class="artwork-title">${artwork.title}</h3>
+            <p class="artwork-artist">by ${artwork.artist}</p>
+            <p class="artwork-description" style="font-size: 0.875rem; color: var(--muted-foreground); margin-bottom: 1rem; line-height: 1.4;">
+                ${artwork.description}
+            </p>
+            <div class="artwork-price">$${artwork.price ? artwork.price.toLocaleString() : '0'}</div>
+            <button class="${buttonClass}" ${buttonDisabled} onclick="handleBid(${artwork.id})">
+                ${buttonText}
+            </button>
+        </div>
+    `;
+    
+    return card;
+}
+
+function initFilters() {
+    const categoryFilter = document.getElementById('category-filter');
+    const priceFilter = document.getElementById('price-filter');
+    const statusFilter = document.getElementById('status-filter');
+    
+    [categoryFilter, priceFilter, statusFilter].forEach(filter => {
+        filter.addEventListener('change', applyFilters);
+    });
+}
+
+function applyFilters() {
+    const category = document.getElementById('category-filter').value;
+    const priceRange = document.getElementById('price-filter').value;
+    const status = document.getElementById('status-filter').value;
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    
+    filteredArtworks = galleryArtworks.filter(artwork => {
+        // Category filter
+        if (category !== 'all' && artwork.category !== category) return false;
+        
+        // Price filter
+        if (priceRange !== 'all') {
+            const price = artwork.price;
+            switch (priceRange) {
+                case '0-1000':
+                    if (price > 1000) return false;
+                    break;
+                case '1000-3000':
+                    if (price < 1000 || price > 3000) return false;
+                    break;
+                case '3000-5000':
+                    if (price < 3000 || price > 5000) return false;
+                    break;
+                case '5000+':
+                    if (price < 5000) return false;
+                    break;
+            }
+        }
+        
+        // Status filter
+        if (status !== 'all' && artwork.status !== status) return false;
+        
+        // Search filter
+        if (searchTerm && !artwork.title.toLowerCase().includes(searchTerm) && 
+            !artwork.artist.toLowerCase().includes(searchTerm) &&
+            !artwork.description.toLowerCase().includes(searchTerm)) return false;
+        
+        return true;
+    });
+    
+    displayedCount = Math.min(8, filteredArtworks.length);
+    displayArtworks(filteredArtworks.slice(0, displayedCount));
+    updateResultsCount();
+    updateLoadMoreButton();
+}
+
+function initSearch() {
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-submit');
+    
+    searchInput.addEventListener('input', debounce(applyFilters, 300));
+    searchBtn.addEventListener('click', applyFilters);
+    
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            applyFilters();
+        }
+    });
+}
+
+function initLoadMore() {
+    const loadMoreBtn = document.getElementById('load-more');
+    loadMoreBtn.addEventListener('click', function() {
+        const newCount = Math.min(displayedCount + 8, filteredArtworks.length);
+        displayArtworks(filteredArtworks.slice(0, newCount));
+        displayedCount = newCount;
+        updateLoadMoreButton();
+    });
+}
+
+function updateResultsCount() {
+    const resultsCount = document.getElementById('results-count');
+    const showing = Math.min(displayedCount, filteredArtworks.length);
+    if (filteredArtworks.length === 0) {
+        resultsCount.textContent = 'No artworks available';
+    } else {
+        resultsCount.textContent = `Showing ${showing} of ${filteredArtworks.length} artworks`;
+    }
+}
+
+function updateLoadMoreButton() {
+    const loadMoreBtn = document.getElementById('load-more');
+    if (displayedCount >= filteredArtworks.length) {
+        loadMoreBtn.style.display = 'none';
+    } else {
+        loadMoreBtn.style.display = 'inline-flex';
+    }
+}
+
+// Utility function for debouncing search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}

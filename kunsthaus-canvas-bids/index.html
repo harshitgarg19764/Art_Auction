@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kunstHaus - Where Art Finds Its Home</title>
+    <meta name="description" content="Discover and bid on unique artwork from local artists. A vibrant, secure platform connecting artists with art enthusiasts.">
+    <meta name="author" content="kunstHaus">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Live Auction Ticker -->
+    <div class="live-ticker">
+        <div class="ticker-content">
+            <div class="ticker-item">
+                <div class="ticker-icon">
+                    <i data-lucide="gavel"></i>
+                </div>
+                <span class="ticker-label">LIVE AUCTION</span>
+            </div>
+            <div class="ticker-separator"></div>
+            <div class="ticker-update">
+                <span class="user-name">Sarah M.</span>
+                <span>placed a bid of</span>
+                <span class="amount">$3,200</span>
+                <span>on</span>
+                <span class="artwork">"Sunset Dreams"</span>
+            </div>
+            <div class="ticker-separator"></div>
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span>LIVE</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <h1>kunst<span class="logo-accent">Haus</span></h1>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="nav-links">
+                    <a href="index.html" class="active">Home</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="artists.html">Artists</a>
+                    <a href="auctions.html">Live Auctions</a>
+                    <a href="about.html">About</a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Search artworks, artists..." class="search-input">
+                        <button class="search-btn" id="search-submit">
+                            <i data-lucide="search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right side actions -->
+                <div class="nav-actions">
+                    <button class="nav-btn" id="theme-toggle">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <!-- Auth buttons - shown when not logged in -->
+                    <div class="auth-buttons" id="auth-buttons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="signup.html" class="btn btn-gallery">Sign Up</a>
+                    </div>
+                    <!-- User menu - shown when logged in -->
+                    <div class="user-menu" id="user-menu" style="display: none;">
+                        <div class="user-info">
+                            <span class="user-name" id="user-name">Welcome</span>
+                            <div class="user-dropdown">
+                                <a href="account.html" class="dropdown-item">
+                                    <i data-lucide="user"></i>
+                                    My Account
+                                </a>
+                                <a href="add-artwork.html" class="dropdown-item" id="add-artwork-link" style="display: none;">
+                                    <i data-lucide="plus"></i>
+                                    Add Artwork
+                                </a>
+                                <a href="my-collection.html" class="dropdown-item" id="my-collection-link" style="display: none;">
+                                    <i data-lucide="heart"></i>
+                                    My Collection
+                                </a>
+                                <button class="dropdown-item logout-btn" id="logout-btn">
+                                    <i data-lucide="log-out"></i>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="nav-btn mobile-menu" id="mobile-menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-background">
+                <div class="hero-overlay"></div>
+            </div>
+            
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Where Art Finds
+                        <span class="hero-accent">Its Home</span>
+                    </h1>
+                    <p class="hero-description">
+                        Discover extraordinary artwork from talented local artists. Bid, collect, and connect in our vibrant creative community.
+                    </p>
+                </div>
+
+                <div class="hero-buttons">
+                    <button class="btn btn-hero">
+                        Explore Gallery
+                        <i data-lucide="arrow-right"></i>
+                    </button>
+                    <button class="btn btn-gallery">Start Collecting</button>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-icon stat-primary">
+                            <i data-lucide="palette"></i>
+                        </div>
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Artworks Available</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon stat-accent">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="stat-number">150+</div>
+                        <div class="stat-label">Local Artists</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon stat-gold">
+                            <i data-lucide="trophy"></i>
+                        </div>
+                        <div class="stat-number">$2.5M+</div>
+                        <div class="stat-label">Total Sales</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="scroll-indicator">
+                <div class="scroll-mouse">
+                    <div class="scroll-dot"></div>
+                </div>
+            </div> -->
+        </section>
+
+        <!-- Featured Artworks Section -->
+        <section class="featured-section" id="gallery">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Featured Artworks</h2>
+                    <p>Discover exceptional pieces from our curated collection</p>
+                </div>
+                
+                <div class="artwork-grid" id="artwork-grid">
+                    <!-- Artworks will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Artist Spotlight Section -->
+        <section class="artist-section" id="artists">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Artist Spotlight</h2>
+                    <p>Meet the talented creators behind our featured works</p>
+                </div>
+                
+                <div class="artist-grid" id="artist-grid">
+                    <!-- Artists will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>kunstHaus</h3>
+                    <p>Where art finds its home. Connecting artists with collectors in a vibrant creative community.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="#gallery">Gallery</a></li>
+                        <li><a href="#artists">Artists</a></li>
+                        <li><a href="#auctions">Live Auctions</a></li>
+                        <li><a href="#about">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link">
+                            <i data-lucide="instagram"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i data-lucide="twitter"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i data-lucide="facebook"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 kunstHaus. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Welcome Back</h2>
+                <button class="modal-close" id="login-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">Email</label>
+                    <input type="email" id="login-email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-hero form-submit">Sign In</button>
+            </form>
+            <div class="form-footer">
+                <p>Don't have an account? <a href="#" id="switch-to-signup">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal" id="signup-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Join kunstHaus</h2>
+                <button class="modal-close" id="signup-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label class="form-label" for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signup-email">Email</label>
+                    <input type="email" id="signup-email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signup-user-type">I am a:</label>
+                    <select id="signup-user-type" class="form-input" required>
+                        <option value="collector">Art Collector</option>
+                        <option value="artist">Artist</option>
+                        <option value="both">Both Artist & Collector</option>
+                    </select>
+                </div>
+                <div class="form-group" id="bio-group" style="display: none;">
+                    <label class="form-label" for="signup-bio">Bio (Optional)</label>
+                    <textarea id="signup-bio" class="form-input" rows="3" placeholder="Tell us about yourself and your art..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signup-password">Password</label>
+                    <input type="password" id="signup-password" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signup-confirm">Confirm Password</label>
+                    <input type="password" id="signup-confirm" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-gallery form-submit">Create Account</button>
+            </form>
+            <div class="form-footer">
+                <p>Already have an account? <a href="#" id="switch-to-login">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="console-info.js"></script>
+    <script src="auth-manager.js"></script>
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="script.js"></script>
+    <script src="auth-status.js"></script>
+</body>
+</html>

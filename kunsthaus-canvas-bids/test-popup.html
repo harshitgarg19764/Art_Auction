@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Popup - kunstHaus</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+
+<body>
+    <div style="padding: 2rem;">
+        <h1>Test Success Popup</h1>
+        <p>Click the button below to test the success popup notification:</p>
+
+        <button onclick="testPopup()" class="btn btn-hero" style="margin: 1rem 0;">
+            Test Success Popup
+        </button>
+
+        <button onclick="testSimpleNotification()" class="btn btn-outline" style="margin: 1rem;">
+            Test Simple Notification
+        </button>
+
+        <div id="debug-info" style="margin-top: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+            <h3>Debug Info:</h3>
+            <p>Check browser console for logs</p>
+        </div>
+    </div>
+
+    <script src="add-artwork.js"></script>
+    <script>
+        function testPopup() {
+            console.log('Testing popup...');
+            const testArtwork = {
+                id: 999,
+                title: "Test Artwork",
+                artist: { name: "Test Artist" },
+                starting_price: 1500
+            };
+
+            try {
+                showEnhancedSuccessNotification(testArtwork);
+                document.getElementById('debug-info').innerHTML += '<p>✅ Enhanced popup triggered</p>';
+            } catch (error) {
+                console.error('Popup error:', error);
+                document.getElementById('debug-info').innerHTML += '<p>❌ Enhanced popup failed: ' + error.message + '</p>';
+            }
+        }
+
+        function testSimpleNotification() {
+            console.log('Testing simple notification...');
+            try {
+                showNotification('This is a test notification!', 'success');
+                document.getElementById('debug-info').innerHTML += '<p>✅ Simple notification triggered</p>';
+            } catch (error) {
+                console.error('Simple notification error:', error);
+                document.getElementById('debug-info').innerHTML += '<p>❌ Simple notification failed: ' + error.message + '</p>';
+            }
+        }
+
+        // Initialize Lucide icons
+        if (window.lucide && typeof lucide.createIcons === 'function') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+
+</html>

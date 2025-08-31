@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - kunstHaus</title>
+    <meta name="description" content="Manage your kunstHaus account, profile, and preferences.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <h1>kunst<span class="logo-accent">Haus</span></h1>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="artists.html">Artists</a>
+                    <a href="auctions.html">Live Auctions</a>
+                    <a href="about.html">About</a>
+                </div>
+
+                <!-- Right side actions -->
+                <div class="nav-actions">
+                    <button class="nav-btn" id="theme-toggle">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <!-- User menu - shown when logged in -->
+                    <div class="user-menu" id="user-menu">
+                        <div class="user-info">
+                            <span class="user-name" id="user-display-name">Account</span>
+                            <div class="user-dropdown">
+                                <a href="account.html" class="dropdown-item active">
+                                    <i data-lucide="user"></i>
+                                    My Account
+                                </a>
+                                <a href="add-artwork.html" class="dropdown-item" id="add-artwork-link" style="display: none;">
+                                    <i data-lucide="plus"></i>
+                                    Add Artwork
+                                </a>
+                                <a href="#" class="dropdown-item" id="logout-btn">
+                                    <i data-lucide="log-out"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="nav-btn mobile-menu" id="mobile-menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">My Account</h1>
+            <p class="page-subtitle">Manage your profile, preferences, and account settings</p>
+        </div>
+    </section>
+
+    <!-- Account Content -->
+    <main class="container" style="padding: 2rem 1rem 4rem;">
+        <div class="account-layout">
+            <!-- Sidebar -->
+            <div class="account-sidebar">
+                <div class="sidebar-menu">
+                    <a href="#profile" class="sidebar-item active" data-tab="profile">
+                        <i data-lucide="user"></i>
+                        Profile
+                    </a>
+                    <a href="#security" class="sidebar-item" data-tab="security">
+                        <i data-lucide="shield"></i>
+                        Security
+                    </a>
+                    <a href="#preferences" class="sidebar-item" data-tab="preferences">
+                        <i data-lucide="settings"></i>
+                        Preferences
+                    </a>
+                    <a href="#activity" class="sidebar-item" data-tab="activity">
+                        <i data-lucide="activity"></i>
+                        Activity
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="account-content">
+                <!-- Profile Tab -->
+                <div class="tab-content active" id="profile-tab">
+                    <div class="content-header">
+                        <h2>Profile Information</h2>
+                        <p>Update your personal information and account details.</p>
+                    </div>
+
+                    <form id="profile-form" class="account-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="profile-name">Full Name</label>
+                                <input type="text" id="profile-name" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="profile-email">Email Address</label>
+                                <input type="email" id="profile-email" class="form-input" readonly>
+                                <small class="form-help">Email cannot be changed for security reasons</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="profile-user-type">Account Type</label>
+                            <select id="profile-user-type" class="form-input">
+                                <option value="collector">Art Collector</option>
+                                <option value="artist">Artist</option>
+                                <option value="both">Artist & Collector</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="profile-bio">Bio</label>
+                            <textarea id="profile-bio" class="form-input" rows="4" 
+                                      placeholder="Tell us about yourself..."></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-hero">Save Changes</button>
+                            <button type="button" class="btn btn-outline" id="cancel-profile">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Security Tab -->
+                <div class="tab-content" id="security-tab">
+                    <div class="content-header">
+                        <h2>Security Settings</h2>
+                        <p>Manage your password and security preferences.</p>
+                    </div>
+
+                    <form id="password-form" class="account-form">
+                        <div class="form-group">
+                            <label class="form-label" for="current-password">Current Password</label>
+                            <input type="password" id="current-password" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="new-password">New Password</label>
+                            <input type="password" id="new-password" class="form-input" required>
+                            <div id="password-strength-account" class="password-strength"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="confirm-new-password">Confirm New Password</label>
+                            <input type="password" id="confirm-new-password" class="form-input" required>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-hero">Update Password</button>
+                        </div>
+                    </form>
+
+                    <div class="security-info">
+                        <h3>Security Tips</h3>
+                        <ul>
+                            <li>Use a strong, unique password</li>
+                            <li>Include uppercase, lowercase, numbers, and special characters</li>
+                            <li>Don't share your password with anyone</li>
+                            <li>Log out from shared devices</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Preferences Tab -->
+                <div class="tab-content" id="preferences-tab">
+                    <div class="content-header">
+                        <h2>Preferences</h2>
+                        <p>Customize your kunstHaus experience.</p>
+                    </div>
+
+                    <form id="preferences-form" class="account-form">
+                        <div class="form-group">
+                            <label class="form-label">Theme Preference</label>
+                            <div class="radio-group">
+                                <label class="radio-item">
+                                    <input type="radio" name="theme" value="light">
+                                    <span class="radio-custom"></span>
+                                    Light Mode
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="theme" value="dark">
+                                    <span class="radio-custom"></span>
+                                    Dark Mode
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="theme" value="auto" checked>
+                                    <span class="radio-custom"></span>
+                                    Auto (System)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email Notifications</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="notify-auctions" checked>
+                                    <span class="checkbox-custom"></span>
+                                    New auction notifications
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="notify-bids" checked>
+                                    <span class="checkbox-custom"></span>
+                                    Bid updates and outbid alerts
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="notify-newsletter">
+                                    <span class="checkbox-custom"></span>
+                                    Weekly newsletter
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="notify-marketing">
+                                    <span class="checkbox-custom"></span>
+                                    Marketing and promotional emails
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-hero">Save Preferences</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Activity Tab -->
+                <div class="tab-content" id="activity-tab">
+                    <div class="content-header">
+                        <h2>Recent Activity</h2>
+                        <p>View your recent bids, purchases, and account activity.</p>
+                    </div>
+
+                    <div class="activity-list" id="activity-list">
+                        <!-- Activity items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="auth-manager.js"></script>
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="account.js"></script>
+</body>
+
+</html>

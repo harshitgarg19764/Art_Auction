@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Kunsthaus Canvas Bids</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .admin-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .admin-button {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin: 0.5rem;
+            font-weight: 500;
+        }
+        .admin-button:hover {
+            opacity: 0.9;
+        }
+        .admin-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .status-message {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <span class="logo-text">kunstHaus</span>
+            </a>
+            <div class="nav-menu">
+                <a href="gallery.html" class="nav-link">Gallery</a>
+                <a href="auctions.html" class="nav-link">Auctions</a>
+                <a href="artists.html" class="nav-link">Artists</a>
+                <a href="auth.html" class="nav-link">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <h1>Admin Panel</h1>
+        <p>Use this panel to manage the Kunsthaus Canvas Bids application.</p>
+
+        <div class="admin-section">
+            <h2>Backend Status</h2>
+            <p>Check if the Flask backend is running and accessible.</p>
+            <button class="admin-button" onclick="checkBackendStatus()">Check Backend Status</button>
+            <div id="backend-status"></div>
+        </div>
+
+        <div class="admin-section">
+            <h2>Sample Data</h2>
+            <p>Create sample users, artists, and artworks for testing.</p>
+            <button class="admin-button" onclick="createSampleData()">Create Sample Data</button>
+            <div id="sample-data-status"></div>
+        </div>
+
+        <div class="admin-section">
+            <h2>Database Stats</h2>
+            <p>View current database statistics.</p>
+            <button class="admin-button" onclick="getStats()">Get Statistics</button>
+            <div id="stats-display"></div>
+        </div>
+
+        <div class="admin-section">
+            <h2>Quick Actions</h2>
+            <p>Perform common administrative tasks.</p>
+            <button class="admin-button" onclick="refreshAllData()">Refresh All Data</button>
+            <button class="admin-button" onclick="clearCache()">Clear Browser Cache</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+
+        function showStatus(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status-message ${isError ? 'status-error' : 'status-success'}">${message}</div>`;
+        }
+
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('backend-status', `✅ Backend is running! Status: ${data.status}, Version: ${data.version}`);
+                } else {
+                    showStatus('backend-status', '❌ Backend is not responding properly', true);
+                }
+            } catch (error) {
+                showStatus('backend-status', `❌ Cannot connect to backend: ${error.message}`, true);
+            }
+        }
+
+        async function createSampleData() {
+            try {
+                const button = event.target;
+                button.disabled = true;
+                button.textContent = 'Creating...';
+
+                const response = await fetch(`${API_BASE_URL}/create-sample-data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('sample-data-status', `✅ Sample data created successfully! Users: ${data.users_created}, Artworks: ${data.artworks_created}`);
+                } else {
+                    const error = await response.json();
+                    showStatus('sample-data-status', `❌ Failed to create sample data: ${error.error}`, true);
+                }
+            } catch (error) {
+                showStatus('sample-data-status', `❌ Error creating sample data: ${error.message}`, true);
+            } finally {
+                const button = event.target;
+                button.disabled = false;
+                button.textContent = 'Create Sample Data';
+            }
+        }
+
+        async function getStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats`);
+                if (response.ok) {
+                    const stats = await response.json();
+                    const statsHtml = `
+                        <div class="status-message status-success">
+                            <h3>Database Statistics</h3>
+                            <ul>
+                                <li>Total Users: ${stats.total_users}</li>
+                                <li>Total Artists: ${stats.total_artists}</li>
+                                <li>Total Artworks: ${stats.total_artworks}</li>
+                                <li>Total Auctions: ${stats.total_auctions}</li>
+                                <li>Active Auctions: ${stats.active_auctions}</li>
+                                <li>Total Bids: ${stats.total_bids}</li>
+                            </ul>
+                        </div>
+                    `;
+                    document.getElementById('stats-display').innerHTML = statsHtml;
+                } else {
+                    showStatus('stats-display', '❌ Failed to get statistics', true);
+                }
+            } catch (error) {
+                showStatus('stats-display', `❌ Error getting statistics: ${error.message}`, true);
+            }
+        }
+
+        function refreshAllData() {
+            // Refresh data on all pages
+            if (window.loadArtworksFromBackend) {
+                window.loadArtworksFromBackend();
+            }
+            if (window.loadArtistsFromBackend) {
+                window.loadArtistsFromBackend();
+            }
+            if (window.refreshAuctions) {
+                window.refreshAuctions();
+            }
+            alert('Data refresh triggered for all pages!');
+        }
+
+        function clearCache() {
+            // Clear localStorage
+            localStorage.clear();
+            
+            // Clear sessionStorage
+            sessionStorage.clear();
+            
+            alert('Browser cache cleared! You may need to refresh the page.');
+        }
+
+        // Auto-check backend status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackendStatus();
+        });
+    </script>
+</body>
+</html>
