@@ -142,9 +142,15 @@ function createEnhancedArtworkCard(artwork) {
                 ${artwork.description}
             </p>
             <div class="artwork-price">$${artwork.price ? artwork.price.toLocaleString() : '0'}</div>
-            <button class="${buttonClass}" ${buttonDisabled} onclick="handleBid(${artwork.id})">
-                ${buttonText}
-            </button>
+            <div class="artwork-actions">
+                <button class="artwork-preview" onclick="showArtworkPreview(${artwork.id})">
+                    <i data-lucide="eye"></i>
+                    Preview
+                </button>
+                <button class="${buttonClass}" ${buttonDisabled} onclick="handleBid(${artwork.id})">
+                    ${buttonText}
+                </button>
+            </div>
         </div>
     `;
     
@@ -262,3 +268,74 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
+// Artwork Preview Functionality
+let currentPreviewArtwork = null;
+
+window.showArtworkPreview = function(artworkId) {
+    const artwork = galleryArtworks.find(art => art.id === artworkId);
+    if (!artwork) {
+        console.error('Artwork not found:', artworkId);
+        return;
+    }
+    
+    currentPreviewArtwork = artwork;
+    
+    // Populate modal with artwork data
+    document.getElementById('preview-image').src = artwork.image;
+    document.getElementById('preview-image').alt = artwork.title;
+    document.getElementById('preview-title').textContent = artwork.title;
+    document.getElementById('preview-artist').textContent = `by ${artwork.artist}`;
+    document.getElementById('preview-description').textContent = artwork.description || 'No description available.';
+    document.getElementById('preview-category').textContent = artwork.category || 'Abstract';
+    document.getElementById('preview-price').textContent = `$${artwork.price ? artwork.price.toLocaleString() : '0'}`;
+    document.getElementById('preview-status').textContent = artwork.status === 'active' ? 'Available' : artwork.status;
+    
+    // Update bid button based on status
+    const bidBtn = document.getElementById('preview-bid-btn');
+    if (artwork.status === 'sold') {
+        bidBtn.textContent = 'Sold Out';
+        bidBtn.disabled = true;
+        bidBtn.classList.add('disabled');
+    } else {
+        bidBtn.innerHTML = '<i data-lucide="gavel"></i> Place Bid';
+        bidBtn.disabled = false;
+        bidBtn.classList.remove('disabled');
+    }
+    
+    // Show modal
+    const modal = document.getElementById('artwork-preview-modal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Initialize Lucide icons
+    if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+    }
+};
+
+window.closeArtworkPreview = function() {
+    const modal = document.getElementById('artwork-preview-modal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    currentPreviewArtwork = null;
+};
+
+window.handleBidFromPreview = function() {
+    if (currentPreviewArtwork) {
+        closeArtworkPreview();
+        handleBid(currentPreviewArtwork.id);
+    }
+};
+
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('artwork-preview-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeArtworkPreview();
+            }
+        });
+    }
+});

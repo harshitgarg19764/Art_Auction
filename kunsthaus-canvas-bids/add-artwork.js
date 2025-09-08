@@ -22,28 +22,17 @@ async function checkArtistAccess() {
             return;
         }
         
-        const isAuthenticated = await window.authManager.checkAuthState();
-        
-        if (!isAuthenticated) {
-            showNotification('Please login to add artworks', 'error');
-            window.location.href = 'login.html';
-            return;
-        }
+        // Remove authentication redirect - let page load normally
+        // The global auth system handles UI visibility
         
         const user = window.authManager.getCurrentUser();
-        if (!user || !user.is_artist) {
-            showNotification('Only artists can add artworks', 'error');
-            window.location.href = 'index.html';
-            return;
+        if (user && user.username) {
+            // Update preview with artist name if user is logged in
+            document.getElementById('preview-artist').textContent = `by ${user.username}`;
         }
-        
-        // Update preview with artist name
-        document.getElementById('preview-artist').textContent = `by ${user.username}`;
         
     } catch (error) {
         console.error('Error checking artist access:', error);
-        showNotification('Error verifying access', 'error');
-        window.location.href = 'index.html';
     }
 }
 
@@ -137,24 +126,68 @@ async function handleAddArtwork(e) {
     }
     
     try {
+        // Debug: Check current user
+        const currentUser = JSON.parse(localStorage.getItem('kunsthaus_user') || '{}');
+        console.log('Current user:', currentUser);
+        console.log('Is artist:', currentUser.is_artist);
+        console.log('Sending artwork data:', formData);
+
+        // Check if token exists
         const token = localStorage.getItem('auth_token');
         if (!token) {
-            throw new Error('No authentication token');
+            showNotification('Please login to add artwork', 'error');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+            return;
         }
 
-        const response = await fetch('/api/artworks', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(formData)
-        });
+        // Use authenticated fetch if available, otherwise fallback to manual token handling
+        let response;
+        if (window.authManager && window.authManager.authenticatedFetch) {
+            response = await window.authManager.authenticatedFetch('/api/artworks', {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
+        } else {
+            // Fallback method
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                throw new Error('No authentication token');
+            }
+
+            response = await fetch('/api/artworks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            });
+        }
         
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
-            throw new Error(error.error || 'Failed to add artwork');
+            console.error('Server response:', response.status, error);
+            
+            // Handle expired token
+            if (response.status === 401 && error.msg && error.msg.includes('expired')) {
+                if (window.authManager) {
+                    window.authManager.handleTokenExpiration();
+                } else {
+                    // Fallback if auth manager not available
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('kunsthaus_user');
+                    showNotification('Your session has expired. Please login again.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                }
+                return;
+            }
+            
+            throw new Error(error.error || error.msg || `Failed to add artwork (${response.status})`);
         }
         
         const artwork = await response.json();
@@ -357,8 +390,8 @@ function showEnhancedSuccessNotification(artwork) {
 }
 
 function showNotification(message, type = 'info') {
-    // Check if the function exists in the global scope
-    if (typeof window.showNotification === 'function') {
+    // Check if the function exists in the global scope and is not this same function
+    if (typeof window.showNotification === 'function' && window.showNotification !== showNotification) {
         window.showNotification(message, type);
         return;
     }

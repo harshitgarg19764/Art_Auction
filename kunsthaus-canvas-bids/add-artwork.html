@@ -53,7 +53,7 @@
                             <div class="user-dropdown">
                                 <a href="account.html" class="dropdown-item">
                                     <i data-lucide="user"></i>
-                                    My Account
+                                    <span id="dropdown-username">My Account</span>
                                 </a>
                                 <a href="#" class="dropdown-item" id="logout-btn">
                                     <i data-lucide="log-out"></i>
@@ -261,10 +261,42 @@
     </main>
 
     <!-- Scripts -->
-    <script src="auth-manager.js"></script>
+    <script src="js/auth-manager.js"></script>
     <script src="js/theme-toggle.js"></script>
     <script src="js/auth.js"></script>
     <script src="script.js"></script>
     <script src="add-artwork.js"></script>
+    
+    <script>
+        // Initialize authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove the authentication check entirely - let the page load normally
+            // The global auth system will handle UI updates
+            
+            // Initialize auth UI if auth manager is available
+            if (window.authManager) {
+                window.authManager.checkAuthState();
+                const isAuthenticated = window.authManager.isAuthenticated();
+                updateUIBasedOnAuth(isAuthenticated);
+            }
+        });
+        
+        function updateUIBasedOnAuth(isAuthenticated) {
+            const authButtons = document.getElementById('auth-buttons');
+            const userMenu = document.getElementById('user-menu');
+            const userDisplayName = document.getElementById('user-display-name');
+            
+            if (isAuthenticated && window.authManager.currentUser) {
+                if (authButtons) authButtons.style.display = 'none';
+                if (userMenu) userMenu.style.display = 'flex';
+                if (userDisplayName) {
+                    userDisplayName.textContent = window.authManager.currentUser.name || 'User';
+                }
+            } else {
+                if (authButtons) authButtons.style.display = 'flex';
+                if (userMenu) userMenu.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

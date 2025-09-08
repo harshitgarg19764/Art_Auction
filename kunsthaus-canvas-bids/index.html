@@ -1,23 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>kunstHaus - Where Art Finds Its Home</title>
-    <meta name="description" content="Discover and bid on unique artwork from local artists. A vibrant, secure platform connecting artists with art enthusiasts.">
+    <meta name="description"
+        content="Discover and bid on unique artwork from local artists. A vibrant, secure platform connecting artists with art enthusiasts.">
     <meta name="author" content="kunstHaus">
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
+
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
+
+    <!-- Auth Manager -->
+    <script src="js/auth-manager.js"></script>
 </head>
+
 <body>
     <!-- Live Auction Ticker -->
     <div class="live-ticker">
@@ -50,7 +58,9 @@
             <div class="nav-content">
                 <!-- Logo -->
                 <div class="logo">
-                    <h1>kunst<span class="logo-accent">Haus</span></h1>
+                    <a href="index.html">
+                        <h1>kunst<span class="logo-accent">Haus</span></h1>
+                    </a>
                 </div>
 
                 <!-- Desktop Navigation -->
@@ -62,19 +72,23 @@
                     <a href="about.html">About</a>
                 </div>
 
-                <!-- Search Bar -->
-                <div class="search-container">
-                    <div class="search-box">
-                        <input type="text" id="search-input" placeholder="Search artworks, artists..." class="search-input">
-                        <button class="search-btn" id="search-submit">
-                            <i data-lucide="search"></i>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Right side actions -->
                 <div class="nav-actions">
-                    <button class="nav-btn" id="theme-toggle">
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <div class="search-box">
+                            <input type="text" id="search-input" placeholder="Search" class="search-input">
+                            <button class="search-btn" id="search-submit">
+                                <i data-lucide="search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="nav-btn mobile-search-btn" id="mobile-search" title="Search">
+                        <i data-lucide="search"></i>
+                    </button>
+
+                    <button class="nav-btn" id="theme-toggle" title="Toggle theme">
                         <i data-lucide="sun"></i>
                     </button>
                     <!-- Auth buttons - shown when not logged in -->
@@ -85,11 +99,13 @@
                     <!-- User menu - shown when logged in -->
                     <div class="user-menu" id="user-menu" style="display: none;">
                         <div class="user-info">
-                            <span class="user-name" id="user-name">Welcome</span>
+                            <i data-lucide="user"></i>
+                            <span class="user-name" id="user-display-name">Welcome</span>
+                            <i data-lucide="chevron-down"></i>
                             <div class="user-dropdown">
                                 <a href="account.html" class="dropdown-item">
                                     <i data-lucide="user"></i>
-                                    My Account
+                                    <span id="dropdown-username">My Account</span>
                                 </a>
                                 <a href="add-artwork.html" class="dropdown-item" id="add-artwork-link" style="display: none;">
                                     <i data-lucide="plus"></i>
@@ -99,10 +115,11 @@
                                     <i data-lucide="heart"></i>
                                     My Collection
                                 </a>
-                                <button class="dropdown-item logout-btn" id="logout-btn">
+                                <div class="dropdown-divider"></div>
+                                <a href="#" class="dropdown-item" id="logout-btn">
                                     <i data-lucide="log-out"></i>
                                     Logout
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -113,6 +130,9 @@
             </div>
         </div>
     </nav>
+    </div>
+    </div>
+    </nav>
 
     <!-- Main Content -->
     <main>
@@ -121,7 +141,7 @@
             <div class="hero-background">
                 <div class="hero-overlay"></div>
             </div>
-            
+
             <div class="hero-content">
                 <div class="hero-text">
                     <h1 class="hero-title">
@@ -129,16 +149,21 @@
                         <span class="hero-accent">Its Home</span>
                     </h1>
                     <p class="hero-description">
-                        Discover extraordinary artwork from talented local artists. Bid, collect, and connect in our vibrant creative community.
+                        Discover extraordinary artwork from talented local artists. Bid, collect, and connect in our
+                        vibrant creative community.
                     </p>
                 </div>
 
                 <div class="hero-buttons">
-                    <button class="btn btn-hero">
+                    <a href="gallery.html" class="btn btn-hero">
+                        <i data-lucide="palette"></i>
                         Explore Gallery
                         <i data-lucide="arrow-right"></i>
-                    </button>
-                    <button class="btn btn-gallery">Start Collecting</button>
+                    </a>
+                    <a href="auctions.html" class="btn btn-gallery">
+                        <i data-lucide="gavel"></i>
+                        Live Auctions
+                    </a>
                 </div>
 
                 <div class="hero-stats">
@@ -180,7 +205,7 @@
                     <h2>Featured Artworks</h2>
                     <p>Discover exceptional pieces from our curated collection</p>
                 </div>
-                
+
                 <div class="artwork-grid" id="artwork-grid">
                     <!-- Artworks will be populated by JavaScript -->
                 </div>
@@ -194,7 +219,7 @@
                     <h2>Artist Spotlight</h2>
                     <p>Meet the talented creators behind our featured works</p>
                 </div>
-                
+
                 <div class="artist-grid" id="artist-grid">
                     <!-- Artists will be populated by JavaScript -->
                 </div>
@@ -303,7 +328,8 @@
                 </div>
                 <div class="form-group" id="bio-group" style="display: none;">
                     <label class="form-label" for="signup-bio">Bio (Optional)</label>
-                    <textarea id="signup-bio" class="form-input" rows="3" placeholder="Tell us about yourself and your art..."></textarea>
+                    <textarea id="signup-bio" class="form-input" rows="3"
+                        placeholder="Tell us about yourself and your art..."></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="signup-password">Password</label>
@@ -323,10 +349,10 @@
 
     <!-- Scripts -->
     <script src="console-info.js"></script>
-    <script src="auth-manager.js"></script>
     <script src="js/theme-toggle.js"></script>
-    <script src="js/auth.js"></script>
+    <script src="js/enhanced-navbar.js"></script>
+    <script src="js/enhanced-ui.js"></script>
     <script src="script.js"></script>
-    <script src="auth-status.js"></script>
 </body>
+
 </html>

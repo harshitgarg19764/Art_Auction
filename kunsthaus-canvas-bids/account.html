@@ -19,6 +19,9 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Auth Manager -->
+    <script src="js/auth-manager.js"></script>
 </head>
 
 <body>
@@ -28,7 +31,9 @@
             <div class="nav-content">
                 <!-- Logo -->
                 <div class="logo">
-                    <h1>kunst<span class="logo-accent">Haus</span></h1>
+                    <a href="index.html">
+                        <h1>kunst<span class="logo-accent">Haus</span></h1>
+                    </a>
                 </div>
 
                 <!-- Desktop Navigation -->
@@ -42,22 +47,48 @@
 
                 <!-- Right side actions -->
                 <div class="nav-actions">
-                    <button class="nav-btn" id="theme-toggle">
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <div class="search-box">
+                            <input type="text" id="search-input" placeholder="Search" class="search-input">
+                            <button class="search-btn" id="search-submit">
+                                <i data-lucide="search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="nav-btn mobile-search-btn" id="mobile-search" title="Search">
+                        <i data-lucide="search"></i>
+                    </button>
+
+                    <button class="nav-btn" id="theme-toggle" title="Toggle theme">
                         <i data-lucide="sun"></i>
                     </button>
+                    <!-- Auth buttons - shown when not logged in -->
+                    <div class="auth-buttons" id="auth-buttons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="signup.html" class="btn btn-gallery">Sign Up</a>
+                    </div>
                     <!-- User menu - shown when logged in -->
-                    <div class="user-menu" id="user-menu">
+                    <div class="user-menu" id="user-menu" style="display: none;">
                         <div class="user-info">
-                            <span class="user-name" id="user-display-name">Account</span>
+                            <i data-lucide="user"></i>
+                            <span class="user-name" id="user-display-name">Welcome</span>
+                            <i data-lucide="chevron-down"></i>
                             <div class="user-dropdown">
-                                <a href="account.html" class="dropdown-item active">
+                                <a href="account.html" class="dropdown-item">
                                     <i data-lucide="user"></i>
-                                    My Account
+                                    <span id="dropdown-username">My Account</span>
                                 </a>
                                 <a href="add-artwork.html" class="dropdown-item" id="add-artwork-link" style="display: none;">
                                     <i data-lucide="plus"></i>
                                     Add Artwork
                                 </a>
+                                <a href="my-collection.html" class="dropdown-item" id="my-collection-link" style="display: none;">
+                                    <i data-lucide="heart"></i>
+                                    My Collection
+                                </a>
+                                <div class="dropdown-divider"></div>
                                 <a href="#" class="dropdown-item" id="logout-btn">
                                     <i data-lucide="log-out"></i>
                                     Logout
@@ -267,10 +298,17 @@
     </main>
 
     <!-- Scripts -->
-    <script src="auth-manager.js"></script>
     <script src="js/theme-toggle.js"></script>
-    <script src="js/auth.js"></script>
     <script src="account.js"></script>
+    
+    <script>
+        // Redirect to login if not authenticated
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.authManager && !window.authManager.isAuthenticated()) {
+                window.location.href = 'login.html?return=account.html';
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -53,6 +53,19 @@ class Artwork(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship to bids
+    bids = db.relationship('Bid', backref='artwork', lazy=True, cascade='all, delete-orphan')
+
+class Bid(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)
+    artwork_id = db.Column(db.Integer, db.ForeignKey('artwork.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='bids')
 
 # Authentication Routes
 @app.route('/api/auth/register', methods=['POST'])
@@ -92,7 +105,7 @@ def register():
             db.session.add(artist)
             db.session.commit()
         
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         
         return jsonify({
             'message': 'User registered successfully',
@@ -123,7 +136,7 @@ def login():
         if not user or not check_password_hash(user.password_hash, data['password']):
             return jsonify({'error': 'Invalid credentials'}), 401
         
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         
         return jsonify({
             'message': 'Login successful',
@@ -144,7 +157,7 @@ def login():
 @jwt_required()
 def get_user_profile():
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user:
@@ -183,7 +196,7 @@ def get_user_profile():
 @jwt_required()
 def update_user_profile():
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user:
@@ -223,7 +236,7 @@ def update_user_profile():
 @jwt_required()
 def get_user_artworks():
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user:
@@ -259,7 +272,7 @@ def get_user_artworks():
 @jwt_required()
 def change_password():
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user:
@@ -346,7 +359,7 @@ def get_artworks():
 @jwt_required()
 def create_artwork():
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user:
@@ -471,6 +484,11 @@ def get_auctions():
                 if artist:
                     artist_name = artist.name
             
+            # Get real bid data
+            highest_bid = db.session.query(db.func.max(Bid.amount)).filter_by(artwork_id=artwork.id).scalar()
+            bid_count = Bid.query.filter_by(artwork_id=artwork.id).count()
+            current_bid = highest_bid if highest_bid else artwork.price
+            
             # Convert artwork to auction format
             auction = {
                 'id': artwork.id,
@@ -483,10 +501,10 @@ def get_auctions():
                     'description': artwork.description
                 },
                 'starting_bid': artwork.price,
-                'current_bid': artwork.price + (artwork.id * 100),  # Simulate some bidding
+                'current_bid': current_bid,
                 'status': 'live',  # All auctions are live for now
                 'end_time': (datetime.utcnow() + timedelta(hours=24)).isoformat(),  # 24 hours from now
-                'bid_count': artwork.id * 2,  # Simulate bid count
+                'bid_count': bid_count,
                 'time_remaining': '23:59:59'
             }
             auctions.append(auction)
@@ -499,6 +517,154 @@ def get_auctions():
                 'per_page': 12,
                 'total': len(auctions)
             }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Bidding Routes
+@app.route('/api/bids/', methods=['POST'])
+@jwt_required()
+def place_bid():
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data.get('amount') or not data.get('artwork_id'):
+            return jsonify({'error': 'Amount and artwork_id are required'}), 400
+        
+        amount = float(data['amount'])
+        artwork_id = int(data['artwork_id'])
+        
+        # Validate amount
+        if amount <= 0:
+            return jsonify({'error': 'Bid amount must be positive'}), 400
+        
+        # Get artwork
+        artwork = Artwork.query.get(artwork_id)
+        if not artwork:
+            return jsonify({'error': 'Artwork not found'}), 404
+        
+        # Check if user is trying to bid on their own artwork
+        if artwork.user_id == user_id:
+            return jsonify({'error': 'You cannot bid on your own artwork'}), 400
+        
+        # Get current highest bid
+        highest_bid = db.session.query(db.func.max(Bid.amount)).filter_by(artwork_id=artwork_id).scalar()
+        minimum_bid = max(artwork.price, (highest_bid or 0) + 50)
+        
+        # Validate bid amount
+        if amount < minimum_bid:
+            return jsonify({'error': f'Minimum bid is ${minimum_bid:,.2f}'}), 400
+        
+        # Create new bid
+        bid = Bid(
+            amount=amount,
+            artwork_id=artwork_id,
+            user_id=user_id
+        )
+        
+        db.session.add(bid)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Bid placed successfully',
+            'bid': {
+                'id': bid.id,
+                'amount': bid.amount,
+                'artwork_id': bid.artwork_id,
+                'user_id': bid.user_id,
+                'created_at': bid.created_at.isoformat()
+            }
+        }), 201
+        
+    except ValueError as e:
+        return jsonify({'error': 'Invalid amount or artwork_id format'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/bids/artwork/<int:artwork_id>', methods=['GET'])
+def get_artwork_bids(artwork_id):
+    try:
+        # Get artwork to verify it exists
+        artwork = Artwork.query.get(artwork_id)
+        if not artwork:
+            return jsonify({'error': 'Artwork not found'}), 404
+        
+        # Get all bids for this artwork, ordered by amount (highest first)
+        bids = Bid.query.filter_by(artwork_id=artwork_id)\
+                       .order_by(Bid.amount.desc(), Bid.created_at.desc())\
+                       .all()
+        
+        bid_list = []
+        for bid in bids:
+            bid_list.append({
+                'id': bid.id,
+                'amount': bid.amount,
+                'bidder_name': bid.user.username,
+                'created_at': bid.created_at.isoformat()
+            })
+        
+        return jsonify({
+            'bids': bid_list,
+            'total_bids': len(bid_list),
+            'highest_bid': bid_list[0]['amount'] if bid_list else artwork.price
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/bids/user', methods=['GET'])
+@jwt_required()
+def get_user_bids():
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get all bids by this user
+        bids = Bid.query.filter_by(user_id=user_id)\
+                       .order_by(Bid.created_at.desc())\
+                       .all()
+        
+        bid_list = []
+        for bid in bids:
+            # Get artist name
+            artist_name = "Unknown Artist"
+            if bid.artwork.artist_id:
+                artist = Artist.query.get(bid.artwork.artist_id)
+                if artist:
+                    artist_name = artist.name
+            
+            # Check if this is the highest bid
+            highest_bid = db.session.query(db.func.max(Bid.amount)).filter_by(artwork_id=bid.artwork_id).scalar()
+            is_winning = (bid.amount == highest_bid)
+            
+            bid_list.append({
+                'id': bid.id,
+                'amount': bid.amount,
+                'artwork': {
+                    'id': bid.artwork.id,
+                    'title': bid.artwork.title,
+                    'artist': artist_name,
+                    'image': bid.artwork.image_url
+                },
+                'is_winning': is_winning,
+                'created_at': bid.created_at.isoformat()
+            })
+        
+        return jsonify({
+            'bids': bid_list,
+            'total_bids': len(bid_list)
         }), 200
         
     except Exception as e:

@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle auth state changes if auth manager is available
     if (window.authManager) {
-        // Initial UI update
-        window.authManager.checkAuthState().then((isAuthenticated) => {
-            updateUIBasedOnAuth(isAuthenticated);
-        });
+        // Initial UI update - checkAuthState doesn't return a promise
+        window.authManager.checkAuthState();
+        const isAuthenticated = window.authManager.isAuthenticated();
+        updateUIBasedOnAuth(isAuthenticated);
         
         // Listen for future auth state changes
         window.authManager.addAuthListener((isAuthenticated) => {
@@ -35,20 +35,38 @@ document.addEventListener('DOMContentLoaded', function() {
 function updateUIBasedOnAuth(isAuthenticated) {
     const authButtons = document.getElementById('auth-buttons');
     const userMenu = document.getElementById('user-menu');
-    const userNameDisplay = document.getElementById('user-display-name');
-    const currentUser = window.authManager?.getCurrentUser();
+    const userDisplayName = document.getElementById('user-display-name');
+    const dropdownUsername = document.getElementById('dropdown-username');
+    const addArtworkLink = document.getElementById('add-artwork-link');
+    const myCollectionLink = document.getElementById('my-collection-link');
     
-    if (isAuthenticated && currentUser) {
-        // Show user menu, hide auth buttons
+    if (isAuthenticated && window.authManager && window.authManager.currentUser) {
         if (authButtons) authButtons.style.display = 'none';
         if (userMenu) userMenu.style.display = 'flex';
-        if (userNameDisplay) {
-            userNameDisplay.textContent = currentUser.name || 'Account';
+        
+        const userName = window.authManager.currentUser.name || window.authManager.currentUser.username || 'User';
+        if (userDisplayName) {
+            userDisplayName.textContent = userName;
+        }
+        if (dropdownUsername) {
+            dropdownUsername.textContent = userName;
+        }
+        
+        // Show/hide links based on user type
+        const isArtist = window.authManager.currentUser.is_artist;
+        if (addArtworkLink) {
+            addArtworkLink.style.display = isArtist ? 'flex' : 'none';
+        }
+        if (myCollectionLink) {
+            myCollectionLink.style.display = 'flex'; // Show for all authenticated users
         }
     } else {
-        // Show auth buttons, hide user menu
         if (authButtons) authButtons.style.display = 'flex';
         if (userMenu) userMenu.style.display = 'none';
+        
+        // Hide links when not authenticated
+        if (addArtworkLink) addArtworkLink.style.display = 'none';
+        if (myCollectionLink) myCollectionLink.style.display = 'none';
     }
 }
 
@@ -104,7 +122,7 @@ async function initArtworkGrid() {
         // Show loading state
         artworkGrid.innerHTML = '<div class="loading">Loading artworks...</div>';
         
-        const response = await fetch('/api/artworks/', {
+        const response = await fetch('http://127.0.0.1:5000/api/artworks/', {
             headers: { 'Accept': 'application/json' },
             credentials: 'include'
         });
@@ -141,7 +159,8 @@ async function initArtworkGrid() {
         
     } catch (error) {
         console.error('Error loading artworks:', error);
-        artworkGrid.innerHTML = '<div class="error">Failed to load artworks. Please try again later.</div>';
+        // Show fallback data when backend is unavailable
+        showFallbackArtworks(artworkGrid);
     }
 }
 
@@ -168,6 +187,89 @@ function createArtworkCard(artwork) {
     return card;
 }
 
+// Fallback data functions
+function showFallbackArtworks(artworkGrid) {
+    const fallbackArtworks = [
+        {
+            id: 1,
+            title: "Abstract Harmony",
+            artist: "Elena Rodriguez",
+            price: 2500,
+            image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop",
+            status: "active"
+        },
+        {
+            id: 2,
+            title: "Urban Dreams",
+            artist: "Marcus Chen",
+            price: 1800,
+            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
+            status: "active"
+        },
+        {
+            id: 3,
+            title: "Digital Sunset",
+            artist: "Sarah Kim",
+            price: 3200,
+            image: "https://images.unsplash.com/photo-1549887534-1541e9326642?w=400&h=300&fit=crop",
+            status: "active"
+        },
+        {
+            id: 4,
+            title: "Ocean Depths",
+            artist: "David Thompson",
+            price: 2100,
+            image: "https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=400&h=300&fit=crop",
+            status: "sold"
+        }
+    ];
+
+    artworkGrid.innerHTML = '';
+    fallbackArtworks.forEach(artwork => {
+        const artworkCard = createArtworkCard(artwork);
+        artworkGrid.appendChild(artworkCard);
+    });
+}
+
+function showFallbackArtists(artistGrid) {
+    const fallbackArtists = [
+        {
+            id: 1,
+            name: "Elena Rodriguez",
+            specialty: "Abstract & Contemporary Art",
+            works: 12,
+            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"
+        },
+        {
+            id: 2,
+            name: "Marcus Chen",
+            specialty: "Digital Art & Photography",
+            works: 8,
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+        },
+        {
+            id: 3,
+            name: "Sarah Kim",
+            specialty: "Mixed Media & Sculpture",
+            works: 15,
+            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
+        },
+        {
+            id: 4,
+            name: "David Thompson",
+            specialty: "Oil Painting & Portraits",
+            works: 6,
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+        }
+    ];
+
+    artistGrid.innerHTML = '';
+    fallbackArtists.forEach(artist => {
+        const artistCard = createArtistCard(artist);
+        artistGrid.appendChild(artistCard);
+    });
+}
+
 // Artist Grid
 async function initArtistGrid() {
     const artistGrid = document.getElementById('artist-grid');
@@ -177,7 +279,7 @@ async function initArtistGrid() {
         // Show loading state
         artistGrid.innerHTML = '<div class="loading">Loading artists...</div>';
         
-        const response = await fetch('/api/artists/', {
+        const response = await fetch('http://127.0.0.1:5000/api/artists/', {
             headers: { 'Accept': 'application/json' },
             credentials: 'include'
         });
@@ -221,7 +323,8 @@ async function initArtistGrid() {
         
     } catch (error) {
         console.error('Error loading artists:', error);
-        artistGrid.innerHTML = '<div class="error">Failed to load artists. Please try again later.</div>';
+        // Show fallback data when backend is unavailable
+        showFallbackArtists(artistGrid);
     }
 }
 
@@ -267,7 +370,6 @@ function initSmoothScrolling() {
     });
 }
 
-// Bid Handling
 async function handleBid(artworkId) {
     // Check if user is authenticated
     if (!window.authManager || !window.authManager.isAuthenticated()) {
@@ -283,64 +385,8 @@ async function handleBid(artworkId) {
         return;
     }
 
-    const artwork = document.querySelector(`[onclick="handleBid(${artworkId})"]`);
-    if (!artwork || artwork.disabled) return;
-
-    // Get bid amount from user
-    const bidAmount = prompt('Enter your bid amount:');
-    if (!bidAmount || isNaN(bidAmount) || parseFloat(bidAmount) <= 0) {
-        showNotification('Please enter a valid bid amount', 'error');
-        return;
-    }
-
-    // Show loading state
-    const originalText = artwork.textContent;
-    artwork.textContent = 'Placing Bid...';
-    artwork.disabled = true;
-
-    try {
-        const response = await fetch('/api/bids/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                amount: parseFloat(bidAmount),
-                artwork_id: artworkId
-            })
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.error || 'Failed to place bid');
-        }
-
-        const bidData = await response.json();
-        
-        // Show success message
-        showNotification(`Bid of $${bidAmount} placed successfully!`, 'success');
-        
-        // Update button temporarily
-        artwork.textContent = 'Bid Placed!';
-        artwork.style.backgroundColor = 'var(--accent)';
-        
-        // Reset button after 2 seconds
-        setTimeout(() => {
-            artwork.textContent = 'Place Bid';
-            artwork.style.backgroundColor = 'var(--primary)';
-            artwork.disabled = false;
-        }, 2000);
-
-    } catch (error) {
-        console.error('Bid error:', error);
-        showNotification(error.message || 'Failed to place bid', 'error');
-        
-        // Reset button
-        artwork.textContent = originalText;
-        artwork.disabled = false;
-    }
+    // Redirect to auctions page with the specific artwork ID
+    window.location.href = `auctions.html?artwork=${artworkId}`;
 }
 
 // Notification System
@@ -626,9 +672,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (exploreBtn) {
         exploreBtn.addEventListener('click', function() {
-            document.getElementById('gallery').scrollIntoView({
-                behavior: 'smooth'
-            });
+            const gallerySection = document.getElementById('gallery');
+            if (gallerySection) {
+                gallerySection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
         });
     }
     
@@ -708,6 +757,6 @@ function initUserTypeHandling() {
         });
     }
 }
-// M
-ake showNotification available globally
+
+// Make showNotification available globally
 window.showNotification = showNotification;

@@ -19,6 +19,9 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Auth Manager -->
+    <script src="js/auth-manager.js"></script>
 </head>
 
 <body>
@@ -28,7 +31,9 @@
             <div class="nav-content">
                 <!-- Logo -->
                 <div class="logo">
-                    <h1>kunst<span class="logo-accent">Haus</span></h1>
+                    <a href="index.html">
+                        <h1>kunst<span class="logo-accent">Haus</span></h1>
+                    </a>
                 </div>
 
                 <!-- Desktop Navigation -->
@@ -40,19 +45,23 @@
                     <a href="about.html">About</a>
                 </div>
 
-                <!-- Search Bar -->
-                <div class="search-container">
-                    <div class="search-box">
-                        <input type="text" id="search-input" placeholder="Search artworks..." class="search-input">
-                        <button class="search-btn" id="search-submit">
-                            <i data-lucide="search"></i>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Right side actions -->
                 <div class="nav-actions">
-                    <button class="nav-btn" id="theme-toggle">
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <div class="search-box">
+                            <input type="text" id="search-input" placeholder="Search" class="search-input">
+                            <button class="search-btn" id="search-submit">
+                                <i data-lucide="search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="nav-btn mobile-search-btn" id="mobile-search" title="Search">
+                        <i data-lucide="search"></i>
+                    </button>
+
+                    <button class="nav-btn" id="theme-toggle" title="Toggle theme">
                         <i data-lucide="sun"></i>
                     </button>
                     <!-- Auth buttons - shown when not logged in -->
@@ -63,11 +72,13 @@
                     <!-- User menu - shown when logged in -->
                     <div class="user-menu" id="user-menu" style="display: none;">
                         <div class="user-info">
+                            <i data-lucide="user"></i>
                             <span class="user-name" id="user-display-name">Welcome</span>
+                            <i data-lucide="chevron-down"></i>
                             <div class="user-dropdown">
                                 <a href="account.html" class="dropdown-item">
                                     <i data-lucide="user"></i>
-                                    My Account
+                                    <span id="dropdown-username">My Account</span>
                                 </a>
                                 <a href="add-artwork.html" class="dropdown-item" id="add-artwork-link" style="display: none;">
                                     <i data-lucide="plus"></i>
@@ -77,6 +88,7 @@
                                     <i data-lucide="heart"></i>
                                     My Collection
                                 </a>
+                                <div class="dropdown-divider"></div>
                                 <a href="#" class="dropdown-item" id="logout-btn">
                                     <i data-lucide="log-out"></i>
                                     Logout
@@ -227,11 +239,55 @@
         </div>
     </div>
 
+    <!-- Artwork Preview Modal -->
+    <div class="modal" id="artwork-preview-modal">
+        <div class="modal-content preview-modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Artwork Preview</h2>
+                <button class="modal-close" onclick="closeArtworkPreview()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="preview-content">
+                <div class="preview-image-container">
+                    <img id="preview-image" src="" alt="" class="preview-image">
+                </div>
+                <div class="preview-details">
+                    <h3 id="preview-title" class="preview-artwork-title"></h3>
+                    <p id="preview-artist" class="preview-artwork-artist"></p>
+                    <div id="preview-description" class="preview-artwork-description"></div>
+                    <div class="preview-info-grid">
+                        <div class="preview-info-item">
+                            <span class="preview-label">Category:</span>
+                            <span id="preview-category" class="preview-value"></span>
+                        </div>
+                        <div class="preview-info-item">
+                            <span class="preview-label">Price:</span>
+                            <span id="preview-price" class="preview-value"></span>
+                        </div>
+                        <div class="preview-info-item">
+                            <span class="preview-label">Status:</span>
+                            <span id="preview-status" class="preview-value"></span>
+                        </div>
+                    </div>
+                    <div class="preview-actions">
+                        <button class="btn btn-hero" id="preview-bid-btn" onclick="handleBidFromPreview()">
+                            <i data-lucide="gavel"></i>
+                            Place Bid
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeArtworkPreview()">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="console-info.js"></script>
-    <script src="auth-manager.js"></script>
     <script src="js/theme-toggle.js"></script>
-    <script src="js/auth.js"></script>
+    <script src="js/enhanced-navbar.js"></script>
     <script src="script.js"></script>
     <script src="gallery.js"></script>
 </body>

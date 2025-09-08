@@ -8,7 +8,12 @@ let modalListenersSetup = false;
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Enhanced auctions page loading...');
-    loadAuctionsFromBackend();
+    
+    // Check for specific artwork ID in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const artworkId = urlParams.get('artwork');
+    
+    loadAuctionsFromBackend(artworkId);
     initFilters();
     startTimers();
     setupGlobalEventListeners();
@@ -19,6 +24,16 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => {
             showNotification('Your artwork is now available for bidding!', 'success');
         }, 1000);
+    }
+    
+    // Setup preview modal click outside listener
+    const modal = document.getElementById('artwork-preview-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeArtworkPreview();
+            }
+        });
     }
 });
 
@@ -44,7 +59,7 @@ setInterval(() => {
     loadAuctionsFromBackend();
 }, 30000);
 
-async function loadAuctionsFromBackend() {
+async function loadAuctionsFromBackend(specificArtworkId = null) {
     console.log('Loading auctions from backend...');
     try {
         const response = await fetch('/api/auctions', {
@@ -78,6 +93,30 @@ async function loadAuctionsFromBackend() {
                 timeRemaining: auction.time_remaining
             };
         });
+
+        // If specific artwork ID is provided, scroll to and highlight it
+        if (specificArtworkId) {
+            setTimeout(() => {
+                const targetCard = document.querySelector(`[onclick="handleBid(${specificArtworkId})"]`);
+                if (targetCard) {
+                    const card = targetCard.closest('.auction-card');
+                    if (card) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        card.style.border = '3px solid var(--accent)';
+                        card.style.boxShadow = '0 0 20px rgba(var(--accent-rgb), 0.3)';
+                        
+                        // Show notification
+                        showNotification(`Found artwork! Ready to place your bid.`, 'success');
+                        
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                            card.style.border = '';
+                            card.style.boxShadow = '';
+                        }, 3000);
+                    }
+                }
+            }, 500);
+        }
 
         // Don't use sample data - only show real auctions
         if (auctionData.length === 0) {
@@ -169,39 +208,38 @@ function displayAuctions() {
 
 function createAuctionCard(auction) {
     const card = document.createElement('div');
-    card.className = 'auction-card';
-
+    card.className = 'artwork-card';
+    
     const statusText = auction.status === 'live' ? 'Live Now' :
         auction.status === 'upcoming' ? 'Upcoming' : 'Ended';
-
+    const statusClass = `status-${auction.status}`;
     const timeRemaining = getTimeRemaining(auction.endTime);
-    const buttonText = auction.status === 'live' ? 'Place Bid' : 'Watch';
-
+    const buttonText = auction.status === 'live' ? 'Place Bid' : 'View Details';
+    const buttonClass = auction.status === 'live' ? 'artwork-bid' : 'artwork-bid sold';
+    
     card.innerHTML = `
-        <div class="auction-status status-${auction.status}">${statusText}</div>
-        <img src="${auction.image}" alt="${auction.title}" class="auction-image" loading="lazy">
-        <div class="auction-info">
-            <h3 class="auction-title">${auction.title}</h3>
-            <p class="auction-artist">by ${auction.artist}</p>
-            <div class="auction-bid-info">
-                <div class="current-bid">
-                    <span class="bid-label">Current Bid:</span>
-                    <span class="bid-amount">$${auction.currentBid.toLocaleString()}</span>
-                </div>
-                <div class="auction-stats">
-                    <span class="bid-count">${auction.bidCount} bids</span>
-                    <span class="watchers">${auction.watchers} watching</span>
+        <div class="artwork-status ${statusClass}">${statusText}</div>
+        <img src="${auction.image}" alt="${auction.title}" class="artwork-image" loading="lazy">
+        <div class="artwork-info">
+            <h3 class="artwork-title">${auction.title}</h3>
+            <p class="artwork-artist">by ${auction.artist}</p>
+            <div class="artwork-details">
+                <div class="artwork-price">$${auction.currentBid ? auction.currentBid.toLocaleString() : auction.startingBid.toLocaleString()}</div>
+                <div class="artwork-time">
+                    <i data-lucide="clock"></i>
+                    <span>${timeRemaining}</span>
                 </div>
             </div>
-            <div class="auction-timer" data-end-time="${auction.endTime.toISOString()}">
-                ${timeRemaining}
-            </div>
-            <button class="btn btn-hero auction-action" onclick="handleBid(${auction.id})">
+            <button class="${buttonClass}" onclick="${auction.status === 'live' ? `handleBid(${auction.id})` : `showArtworkPreview(${auction.id})`}">
                 ${buttonText}
             </button>
         </div>
     `;
-
+    
+    // Add animation delay based on index if needed
+    const index = document.querySelectorAll('.artwork-card').length % 8;
+    card.style.animationDelay = `${index * 0.1}s`;
+    
     return card;
 }
 
@@ -289,6 +327,16 @@ function handleBid(auctionId) {
     if (!window.authManager || !window.authManager.isAuthenticated()) {
         showNotification('Please login to place bids', 'error');
         // Redirect to login page
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+        return;
+    }
+
+    // Check if user data is available
+    const currentUser = window.authManager.getCurrentUser();
+    if (!currentUser) {
+        showNotification('Please login to place bids', 'error');
         setTimeout(() => {
             window.location.href = 'login.html';
         }, 1500);
@@ -566,10 +614,25 @@ async function loadBidHistory(artworkId) {
     }
 
     try {
-        const auction = auctionData.find(a => a.id === artworkId);
-        if (auction && auction.bidHistory) {
-            displayBidHistory(auction.bidHistory);
+        // Show loading state
+        historyContainer.innerHTML = `
+            <div class="loading-state">
+                <i data-lucide="loader-2"></i>
+                Loading bid history...
+            </div>
+        `;
+
+        // Fetch bid history from backend
+        const response = await fetch(`/api/bids/artwork/${artworkId}`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            displayBidHistory(data.bids);
         } else {
+            console.error('Failed to load bid history:', response.status);
             displayBidHistory([]);
         }
     } catch (error) {
@@ -683,14 +746,9 @@ async function handleBidSubmit(e) {
         // Get current user
         const currentUser = window.authManager.getCurrentUser();
 
-        // Submit bid to backend
-        const response = await fetch('/api/bids/', {
+        // Submit bid to backend using authenticated fetch
+        const response = await window.authManager.authenticatedFetch('/api/bids/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'include',
             body: JSON.stringify({
                 amount: bidAmount,
                 artwork_id: auctionId
@@ -730,7 +788,7 @@ async function handleBidSubmit(e) {
         }
 
     } catch (error) {
-        console.error('Bid error:', error);
+        console.error('Bid submission error:', error);
         showNotification(error.message || 'Failed to place bid', 'error');
     } finally {
         submitBtn.textContent = originalText;
@@ -786,5 +844,70 @@ function showNotification(message, type = 'info') {
         }, 300);
     }, 3000);
 }
+
+// Artwork Preview Functionality for Auctions
+let currentPreviewAuction = null;
+
+window.showArtworkPreview = function(auctionId) {
+    const auction = auctionData.find(auc => auc.id === auctionId);
+    if (!auction) {
+        console.error('Auction not found:', auctionId);
+        return;
+    }
+    
+    currentPreviewAuction = auction;
+    
+    // Populate modal with auction data
+    document.getElementById('preview-image').src = auction.image;
+    document.getElementById('preview-image').alt = auction.title;
+    document.getElementById('preview-title').textContent = auction.title;
+    document.getElementById('preview-artist').textContent = `by ${auction.artist}`;
+    document.getElementById('preview-description').textContent = auction.description || 'Beautiful artwork available for bidding.';
+    document.getElementById('preview-category').textContent = auction.category || 'Abstract';
+    document.getElementById('preview-current-bid').textContent = `$${auction.currentBid ? auction.currentBid.toLocaleString() : '0'}`;
+    document.getElementById('preview-status').textContent = auction.status === 'live' ? 'Live Auction' : 
+                                                           auction.status === 'upcoming' ? 'Upcoming' : 'Ended';
+    document.getElementById('preview-bid-count').textContent = `${auction.bidCount || 0} bids`;
+    
+    // Update bid button based on status
+    const bidBtn = document.getElementById('preview-bid-btn');
+    if (auction.status === 'ended') {
+        bidBtn.textContent = 'Auction Ended';
+        bidBtn.disabled = true;
+        bidBtn.classList.add('disabled');
+    } else if (auction.status === 'upcoming') {
+        bidBtn.innerHTML = '<i data-lucide="clock"></i> Watch';
+        bidBtn.disabled = false;
+        bidBtn.classList.remove('disabled');
+    } else {
+        bidBtn.innerHTML = '<i data-lucide="gavel"></i> Place Bid';
+        bidBtn.disabled = false;
+        bidBtn.classList.remove('disabled');
+    }
+    
+    // Show modal
+    const modal = document.getElementById('artwork-preview-modal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Initialize Lucide icons
+    if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+    }
+};
+
+window.closeArtworkPreview = function() {
+    const modal = document.getElementById('artwork-preview-modal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    currentPreviewAuction = null;
+};
+
+window.handleBidFromPreview = function() {
+    if (currentPreviewAuction) {
+        closeArtworkPreview();
+        handleBid(currentPreviewAuction.id);
+    }
+};
 
 console.log('Enhanced auctions script loaded successfully');
