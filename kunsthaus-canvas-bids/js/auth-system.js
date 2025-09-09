@@ -1,50 +1,222 @@
-// Authentication Page Functionality
+// Comprehensive Authentication System for kunstHaus
+// Combines authentication management, form handling, and UI interactions
 
-document.addEventListener('DOMContentLoaded', function () {
-    initAuthForms();
-    initPasswordStrength();
-    initForgotPassword();
-});
+// ============================================================================
+// AUTHENTICATION MANAGER
+// ============================================================================
 
-// Notification System
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
+class AuthManager {
+    constructor() {
+        this.currentUser = null;
+        this.authListeners = [];
+        this.isInitialized = false;
+        
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.init());
+        } else {
+            this.init();
+        }
+    }
 
-    const backgroundColor = type === 'success' ? 'var(--accent)' :
-        type === 'error' ? 'var(--destructive)' : 'var(--primary)';
+    init() {
+        // Check for existing auth on page load
+        this.checkAuthStatus();
+        
+        // Set up logout handler
+        this.setupLogoutHandler();
+        
+        // Update UI based on auth status
+        this.updateAuthUI();
+        
+        this.isInitialized = true;
+    }
 
-    Object.assign(notification.style, {
-        position: 'fixed',
-        top: '20px',
-        right: '20px',
-        padding: '1rem 1.5rem',
-        borderRadius: 'var(--radius)',
-        backgroundColor: backgroundColor,
-        color: 'white',
-        fontWeight: '500',
-        zIndex: '1000',
-        transform: 'translateX(100%)',
-        transition: 'transform 0.3s ease',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-    });
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-
-    setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
+    checkAuthStatus() {
+        const token = localStorage.getItem('auth_token');
+        const userData = localStorage.getItem('kunsthaus_user');
+        
+        if (token && userData) {
+            try {
+                this.currentUser = JSON.parse(userData);
+                this.notifyAuthListeners(true);
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                this.logout();
             }
-        }, 300);
-    }, 3000);
+        } else {
+            this.currentUser = null;
+            this.notifyAuthListeners(false);
+        }
+    }
+
+    // Alias for backward compatibility
+    checkAuthState() {
+        return this.checkAuthStatus();
+    }
+
+    updateAuthUI() {
+        const authButtons = document.getElementById('auth-buttons');
+        const userMenu = document.getElementById('user-menu');
+        const userDisplayName = document.getElementById('user-display-name');
+        const addArtworkLink = document.getElementById('add-artwork-link');
+        const myCollectionLink = document.getElementById('my-collection-link');
+
+        if (this.currentUser) {
+            // User is logged in
+            if (authButtons) authButtons.style.display = 'none';
+            if (userMenu) userMenu.style.display = 'block';
+            
+            // Update username display
+            if (userDisplayName) {
+                const displayName = this.currentUser.username || 
+                                  this.currentUser.email?.split('@')[0] || 
+                                  'User';
+                userDisplayName.textContent = displayName;
+            }
+
+            // Show artist-specific links if user is an artist
+            if (this.currentUser.is_artist) {
+                if (addArtworkLink) addArtworkLink.style.display = 'flex';
+            }
+            
+            // Always show collection link for logged-in users
+            if (myCollectionLink) myCollectionLink.style.display = 'flex';
+
+        } else {
+            // User is not logged in
+            if (authButtons) authButtons.style.display = 'flex';
+            if (userMenu) userMenu.style.display = 'none';
+            if (addArtworkLink) addArtworkLink.style.display = 'none';
+            if (myCollectionLink) myCollectionLink.style.display = 'none';
+        }
+    }
+
+    setupLogoutHandler() {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.logout();
+            });
+        }
+    }
+
+    logout() {
+        // Clear stored data
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('kunsthaus_user');
+        
+        // Reset current user
+        this.currentUser = null;
+        
+        // Notify listeners
+        this.notifyAuthListeners(false);
+        
+        // Update UI
+        this.updateAuthUI();
+        
+        // Show notification
+        if (window.showNotification) {
+            window.showNotification('You have been logged out successfully.', 'info');
+        }
+        
+        // Redirect to home page
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
+    }
+
+    login(userData, token) {
+        // Store auth data
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('kunsthaus_user', JSON.stringify(userData));
+        
+        // Set current user
+        this.currentUser = userData;
+        
+        // Notify listeners
+        this.notifyAuthListeners(true);
+        
+        // Update UI
+        this.updateAuthUI();
+    }
+
+    isAuthenticated() {
+        return this.currentUser !== null && localStorage.getItem('auth_token') !== null;
+    }
+
+    getAuthToken() {
+        return localStorage.getItem('auth_token');
+    }
+
+    getCurrentUser() {
+        return this.currentUser;
+    }
+
+    // Auth listeners for other components
+    addAuthListener(callback) {
+        this.authListeners.push(callback);
+    }
+
+    removeAuthListener(callback) {
+        this.authListeners = this.authListeners.filter(listener => listener !== callback);
+    }
+
+    notifyAuthListeners(isAuthenticated) {
+        this.authListeners.forEach(callback => {
+            try {
+                callback(isAuthenticated, this.currentUser);
+            } catch (error) {
+                console.error('Error in auth listener:', error);
+            }
+        });
+    }
+
+    // Authenticated fetch helper
+    async authenticatedFetch(url, options = {}) {
+        const token = this.getAuthToken();
+        
+        if (!token) {
+            throw new Error('No authentication token available');
+        }
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            ...options.headers
+        };
+
+        const response = await fetch(url, {
+            ...options,
+            headers
+        });
+
+        // Handle token expiration
+        if (response.status === 401) {
+            this.logout();
+            throw new Error('Session expired. Please log in again.');
+        }
+
+        return response;
+    }
+
+    // Method to manually refresh the UI (useful for debugging)
+    refreshUI() {
+        this.checkAuthStatus();
+        this.updateAuthUI();
+    }
 }
+
+// ============================================================================
+// AUTHENTICATION FORMS
+// ============================================================================
+
+// Rate limiting for login attempts
+let loginAttempts = 0;
+let lastLoginAttempt = 0;
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 
 // Email validation helper
 function isValidEmail(email) {
@@ -82,12 +254,6 @@ function validatePassword(password) {
 
     return { isValid: true, message: 'Password is strong' };
 }
-
-// Rate limiting for login attempts
-let loginAttempts = 0;
-let lastLoginAttempt = 0;
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 
 function checkRateLimit() {
     const now = Date.now();
@@ -311,6 +477,10 @@ function handleSignupSubmit(e) {
     });
 }
 
+// ============================================================================
+// PASSWORD STRENGTH INDICATOR
+// ============================================================================
+
 function initPasswordStrength() {
     const passwordInput = document.getElementById('password');
     const strengthIndicator = document.getElementById('password-strength');
@@ -378,7 +548,10 @@ function updatePasswordStrength(indicator, strength) {
     ` : '';
 }
 
-// Forgot Password functionality
+// ============================================================================
+// FORGOT PASSWORD FUNCTIONALITY
+// ============================================================================
+
 function initForgotPassword() {
     const forgotPasswordLink = document.getElementById('forgot-password-link');
 
@@ -482,4 +655,78 @@ async function handleForgotPasswordSubmit(e) {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     }
+}
+
+// ============================================================================
+// NOTIFICATION SYSTEM
+// ============================================================================
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+
+    const backgroundColor = type === 'success' ? 'var(--accent)' :
+        type === 'error' ? 'var(--destructive)' : 'var(--primary)';
+
+    Object.assign(notification.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        padding: '1rem 1.5rem',
+        borderRadius: 'var(--radius)',
+        backgroundColor: backgroundColor,
+        color: 'white',
+        fontWeight: '500',
+        zIndex: '1000',
+        transform: 'translateX(100%)',
+        transition: 'transform 0.3s ease',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+    });
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+
+document.addEventListener('DOMContentLoaded', function () {
+    initAuthForms();
+    initPasswordStrength();
+    initForgotPassword();
+});
+
+// Create global auth manager instance
+window.authManager = new AuthManager();
+
+// Global functions for backward compatibility
+window.refreshAuthUI = () => {
+    if (window.authManager) {
+        window.authManager.refreshUI();
+    }
+};
+
+window.authenticatedFetch = (url, options = {}) => {
+    return window.authManager.authenticatedFetch(url, options);
+};
+
+window.showNotification = showNotification;
+
+// Export for use in other scripts
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { AuthManager, showNotification };
 }

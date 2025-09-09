@@ -3,6 +3,8 @@
  * Provides consistent navigation across all pages with mobile support
  */
 
+// Prevent redeclaration if already loaded
+if (typeof EnhancedNavbar === 'undefined') {
 class EnhancedNavbar {
     constructor() {
         this.mobileMenuOpen = false;
@@ -109,63 +111,16 @@ class EnhancedNavbar {
     }
 
     setupSearch() {
-        const searchInput = document.getElementById('search-input');
-        const searchBtn = document.getElementById('search-submit');
+        // Mobile search toggle only
         const mobileSearchBtn = document.getElementById('mobile-search');
         const searchContainer = document.querySelector('.search-container');
-        
-        if (!searchInput || !searchBtn) return;
 
-        let searchTimeout;
-        
-        // Enhanced search functionality
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            const query = e.target.value.trim();
-            
-            if (query.length > 2) {
-                searchTimeout = setTimeout(() => {
-                    this.showSearchSuggestions(query);
-                }, 300);
-            } else {
-                this.hideSearchSuggestions();
-            }
-        });
-
-        // Search submission
-        const performSearch = () => {
-            const query = searchInput.value.trim();
-            if (query) {
-                this.executeSearch(query);
-            }
-        };
-
-        searchBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            performSearch();
-        });
-
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                performSearch();
-            }
-        });
-
-        // Mobile search toggle
         if (mobileSearchBtn && searchContainer) {
             mobileSearchBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.toggleMobileSearch();
             });
         }
-
-        // Close search suggestions when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-container')) {
-                this.hideSearchSuggestions();
-            }
-        });
     }
 
     toggleMobileSearch() {
@@ -179,84 +134,12 @@ class EnhancedNavbar {
         
         if (this.searchExpanded) {
             const searchInput = document.getElementById('search-input');
-            setTimeout(() => searchInput.focus(), 100);
-        }
-    }
-
-    showSearchSuggestions(query) {
-        // Create or update search suggestions dropdown
-        let suggestionsContainer = document.querySelector('.search-suggestions');
-        
-        if (!suggestionsContainer) {
-            suggestionsContainer = document.createElement('div');
-            suggestionsContainer.className = 'search-suggestions';
-            document.querySelector('.search-container').appendChild(suggestionsContainer);
-        }
-
-        // Mock suggestions (replace with actual API call)
-        const suggestions = [
-            `Search for "${query}" in artworks`,
-            `Search for "${query}" in artists`,
-            `Search for "${query}" in collections`
-        ];
-
-        suggestionsContainer.innerHTML = suggestions.map(suggestion => 
-            `<div class="search-suggestion" data-query="${query}">${suggestion}</div>`
-        ).join('');
-
-        suggestionsContainer.style.display = 'block';
-
-        // Add click handlers for suggestions
-        suggestionsContainer.querySelectorAll('.search-suggestion').forEach(item => {
-            item.addEventListener('click', () => {
-                const query = item.dataset.query;
-                this.executeSearch(query);
-            });
-        });
-    }
-
-    hideSearchSuggestions() {
-        const suggestionsContainer = document.querySelector('.search-suggestions');
-        if (suggestionsContainer) {
-            suggestionsContainer.style.display = 'none';
-        }
-    }
-
-    executeSearch(query) {
-        // Add loading state
-        const searchBtn = document.getElementById('search-submit');
-        searchBtn.classList.add('loading');
-        
-        // Hide suggestions
-        this.hideSearchSuggestions();
-        
-        // Simulate search delay
-        setTimeout(() => {
-            searchBtn.classList.remove('loading');
-            
-            // Redirect to search results
-            if (window.location.pathname.includes('search.html')) {
-                // Already on search page, update results
-                this.updateSearchResults(query);
-            } else {
-                // Redirect to search page
-                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            if (searchInput) {
+                setTimeout(() => searchInput.focus(), 100);
             }
-        }, 500);
+        }
     }
 
-    updateSearchResults(query) {
-        // Update search query display
-        const queryDisplay = document.getElementById('search-query-display');
-        if (queryDisplay) {
-            queryDisplay.textContent = query;
-        }
-        
-        // Trigger search results update (implement based on your search logic)
-        if (window.performSearch) {
-            window.performSearch(query);
-        }
-    }
 
     setupUserMenu() {
         const userInfo = document.querySelector('.user-info');
@@ -461,12 +344,16 @@ class EnhancedNavbar {
     }
 }
 
+}
+
 // Initialize enhanced navbar when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    window.enhancedNavbar = new EnhancedNavbar();
+    if (typeof EnhancedNavbar !== 'undefined') {
+        window.enhancedNavbar = new EnhancedNavbar();
+    }
 });
 
 // Export for use in other scripts
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== 'undefined' && module.exports && typeof EnhancedNavbar !== 'undefined') {
     module.exports = EnhancedNavbar;
 }

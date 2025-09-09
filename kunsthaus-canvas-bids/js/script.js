@@ -1,30 +1,25 @@
-// kunstHaus - Interactive Features
-
-// Initialize Lucide icons and core functionality
+// kunstHaus - Core Functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Lucide icons
     if (window.lucide && typeof lucide.createIcons === 'function') {
         lucide.createIcons();
     }
     
-    // Initialize all features
+    // Initialize features
     initLiveAuctionTicker();
     initArtworkGrid();
     initArtistGrid();
     initMobileMenu();
     initSmoothScrolling();
     initModals();
-    initSearch();
     initUserTypeHandling();
     
-    // Handle auth state changes if auth manager is available
+    // Handle auth state changes
     if (window.authManager) {
-        // Initial UI update - checkAuthState doesn't return a promise
         window.authManager.checkAuthState();
         const isAuthenticated = window.authManager.isAuthenticated();
         updateUIBasedOnAuth(isAuthenticated);
         
-        // Listen for future auth state changes
         window.authManager.addAuthListener((isAuthenticated) => {
             updateUIBasedOnAuth(isAuthenticated);
         });
@@ -45,62 +40,46 @@ function updateUIBasedOnAuth(isAuthenticated) {
         if (userMenu) userMenu.style.display = 'flex';
         
         const userName = window.authManager.currentUser.name || window.authManager.currentUser.username || 'User';
-        if (userDisplayName) {
-            userDisplayName.textContent = userName;
-        }
-        if (dropdownUsername) {
-            dropdownUsername.textContent = userName;
+        if (userDisplayName) userDisplayName.textContent = userName;
+        if (dropdownUsername) dropdownUsername.textContent = userName;
+        
+        // Show artist-specific links for artists
+        if (window.authManager.currentUser.user_type === 'artist' || window.authManager.currentUser.user_type === 'both') {
+            if (addArtworkLink) addArtworkLink.style.display = 'block';
         }
         
-        // Show/hide links based on user type
-        const isArtist = window.authManager.currentUser.is_artist;
-        if (addArtworkLink) {
-            addArtworkLink.style.display = isArtist ? 'flex' : 'none';
-        }
-        if (myCollectionLink) {
-            myCollectionLink.style.display = 'flex'; // Show for all authenticated users
-        }
+        if (myCollectionLink) myCollectionLink.style.display = 'block';
     } else {
         if (authButtons) authButtons.style.display = 'flex';
         if (userMenu) userMenu.style.display = 'none';
-        
-        // Hide links when not authenticated
         if (addArtworkLink) addArtworkLink.style.display = 'none';
         if (myCollectionLink) myCollectionLink.style.display = 'none';
     }
 }
 
-// Theme functionality is handled by js/theme-toggle.js
-
 // Live Auction Ticker
 function initLiveAuctionTicker() {
+    const ticker = document.getElementById('live-ticker');
+    if (!ticker) return;
+    
     const auctionUpdates = [
-        { user: "Sarah M.", amount: 3200, artwork: "Sunset Dreams", action: "bid" },
-        { user: "David L.", amount: 1800, artwork: "Urban Poetry", action: "won" },
-        { user: "Elena R.", amount: 2750, artwork: "Ocean Depths", action: "bid" },
-        { user: "Marcus T.", amount: 4100, artwork: "Digital Horizons", action: "bid" },
-        { user: "Luna S.", amount: 2200, artwork: "Abstract Emotions", action: "won" },
+        { artwork: "Midnight Dreams", artist: "Sarah Mitchell", action: "bid", amount: 2500 },
+        { artwork: "Urban Symphony", artist: "Marcus Chen", action: "sold", amount: 4200 },
+        { artwork: "Ocean Whispers", artist: "Elena Rodriguez", action: "bid", amount: 1800 }
     ];
     
     let currentIndex = 0;
-    const tickerUpdate = document.querySelector('.ticker-update');
-    const tickerIcon = document.querySelector('.ticker-icon i');
-
-    if (!tickerUpdate || !tickerIcon) return;
     
     function updateTicker() {
         const update = auctionUpdates[currentIndex];
-        const actionText = update.action === "bid" ? "placed a bid of" : "won with";
+        const tickerText = ticker.querySelector('.ticker-text');
+        const tickerIcon = ticker.querySelector('i[data-lucide]');
         
-        tickerUpdate.innerHTML = `
-            <span class="user-name">${update.user}</span>
-            <span>${actionText}</span>
-            <span class="amount">$${update.amount.toLocaleString()}</span>
-            <span>on</span>
-            <span class="artwork">"${update.artwork}"</span>
+        tickerText.innerHTML = `
+            <strong>${update.artwork}</strong> by ${update.artist} - 
+            ${update.action === 'bid' ? 'New bid' : 'Sold'}: $${update.amount.toLocaleString()}
         `;
         
-        // Update icon based on action
         tickerIcon.setAttribute('data-lucide', update.action === "bid" ? 'gavel' : 'trending-up');
         if (window.lucide && typeof lucide.createIcons === 'function') {
             lucide.createIcons();
@@ -109,7 +88,6 @@ function initLiveAuctionTicker() {
         currentIndex = (currentIndex + 1) % auctionUpdates.length;
     }
     
-    // Update ticker every 4 seconds
     setInterval(updateTicker, 4000);
 }
 
@@ -119,7 +97,6 @@ async function initArtworkGrid() {
     if (!artworkGrid) return;
     
     try {
-        // Show loading state
         artworkGrid.innerHTML = '<div class="loading">Loading artworks...</div>';
         
         const response = await fetch('http://127.0.0.1:5000/api/artworks/', {
@@ -127,14 +104,11 @@ async function initArtworkGrid() {
             credentials: 'include'
         });
         
-        if (!response.ok) {
-            throw new Error('Failed to load artworks');
-        }
+        if (!response.ok) throw new Error('Failed to load artworks');
         
         const data = await response.json();
         const artworks = data.items || [];
         
-        // Clear loading state
         artworkGrid.innerHTML = '';
         
         if (artworks.length === 0) {
@@ -143,14 +117,13 @@ async function initArtworkGrid() {
         }
         
         artworks.forEach(artwork => {
-            // Transform backend data to frontend format
             const artworkData = {
                 id: artwork.id,
                 title: artwork.title,
                 artist: artwork.artist ? artwork.artist.name : 'Unknown Artist',
                 price: artwork.starting_price,
                 image: artwork.image_url || "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop",
-                status: "active" // For now, all artworks are active
+                status: "active"
             };
             
             const artworkCard = createArtworkCard(artworkData);
@@ -159,8 +132,7 @@ async function initArtworkGrid() {
         
     } catch (error) {
         console.error('Error loading artworks:', error);
-        // Show fallback data when backend is unavailable
-        showFallbackArtworks(artworkGrid);
+        artworkGrid.innerHTML = '<div class="no-artworks">No artworks available. Please check your connection and try again.</div>';
     }
 }
 
@@ -187,96 +159,12 @@ function createArtworkCard(artwork) {
     return card;
 }
 
-// Fallback data functions
-function showFallbackArtworks(artworkGrid) {
-    const fallbackArtworks = [
-        {
-            id: 1,
-            title: "Abstract Harmony",
-            artist: "Elena Rodriguez",
-            price: 2500,
-            image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop",
-            status: "active"
-        },
-        {
-            id: 2,
-            title: "Urban Dreams",
-            artist: "Marcus Chen",
-            price: 1800,
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
-            status: "active"
-        },
-        {
-            id: 3,
-            title: "Digital Sunset",
-            artist: "Sarah Kim",
-            price: 3200,
-            image: "https://images.unsplash.com/photo-1549887534-1541e9326642?w=400&h=300&fit=crop",
-            status: "active"
-        },
-        {
-            id: 4,
-            title: "Ocean Depths",
-            artist: "David Thompson",
-            price: 2100,
-            image: "https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=400&h=300&fit=crop",
-            status: "sold"
-        }
-    ];
-
-    artworkGrid.innerHTML = '';
-    fallbackArtworks.forEach(artwork => {
-        const artworkCard = createArtworkCard(artwork);
-        artworkGrid.appendChild(artworkCard);
-    });
-}
-
-function showFallbackArtists(artistGrid) {
-    const fallbackArtists = [
-        {
-            id: 1,
-            name: "Elena Rodriguez",
-            specialty: "Abstract & Contemporary Art",
-            works: 12,
-            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"
-        },
-        {
-            id: 2,
-            name: "Marcus Chen",
-            specialty: "Digital Art & Photography",
-            works: 8,
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-        },
-        {
-            id: 3,
-            name: "Sarah Kim",
-            specialty: "Mixed Media & Sculpture",
-            works: 15,
-            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
-        },
-        {
-            id: 4,
-            name: "David Thompson",
-            specialty: "Oil Painting & Portraits",
-            works: 6,
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
-        }
-    ];
-
-    artistGrid.innerHTML = '';
-    fallbackArtists.forEach(artist => {
-        const artistCard = createArtistCard(artist);
-        artistGrid.appendChild(artistCard);
-    });
-}
-
 // Artist Grid
 async function initArtistGrid() {
     const artistGrid = document.getElementById('artist-grid');
     if (!artistGrid) return;
     
     try {
-        // Show loading state
         artistGrid.innerHTML = '<div class="loading">Loading artists...</div>';
         
         const response = await fetch('http://127.0.0.1:5000/api/artists/', {
@@ -284,14 +172,11 @@ async function initArtistGrid() {
             credentials: 'include'
         });
         
-        if (!response.ok) {
-            throw new Error('Failed to load artists');
-        }
+        if (!response.ok) throw new Error('Failed to load artists');
         
         const data = await response.json();
         const artists = data.items || [];
         
-        // Clear loading state
         artistGrid.innerHTML = '';
         
         if (artists.length === 0) {
@@ -299,7 +184,6 @@ async function initArtistGrid() {
             return;
         }
         
-        // Default avatars for artists
         const defaultAvatars = [
             "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
             "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
@@ -308,7 +192,6 @@ async function initArtistGrid() {
         ];
         
         artists.forEach((artist, index) => {
-            // Transform backend data to frontend format
             const artistData = {
                 id: artist.id,
                 name: artist.name,
@@ -323,8 +206,7 @@ async function initArtistGrid() {
         
     } catch (error) {
         console.error('Error loading artists:', error);
-        // Show fallback data when backend is unavailable
-        showFallbackArtists(artistGrid);
+        artistGrid.innerHTML = '<div class="no-artists">No artists available. Please check your connection and try again.</div>';
     }
 }
 
@@ -371,21 +253,17 @@ function initSmoothScrolling() {
 }
 
 async function handleBid(artworkId) {
-    // Check if user is authenticated
     if (!window.authManager || !window.authManager.isAuthenticated()) {
         showNotification('Please login to place bids', 'error');
-        // Open login modal if available
         const loginModal = document.getElementById('login-modal');
         if (loginModal) {
             openModal('login-modal');
         } else {
-            // Redirect to login page if modal not available
             window.location.href = 'login.html';
         }
         return;
     }
 
-    // Redirect to auctions page with the specific artwork ID
     window.location.href = `auctions.html?artwork=${artworkId}`;
 }
 
@@ -395,7 +273,6 @@ function showNotification(message, type = 'info') {
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
     
-    // Style the notification
     const backgroundColor = type === 'success' ? 'var(--accent)' : 
                           type === 'error' ? 'var(--destructive)' : 'var(--primary)';
     
@@ -416,12 +293,10 @@ function showNotification(message, type = 'info') {
     
     document.body.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 100);
     
-    // Remove after 3 seconds
     setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
@@ -434,20 +309,12 @@ function showNotification(message, type = 'info') {
 
 // Modal Management
 function initModals() {
-    const loginModal = document.getElementById('login-modal');
-    const signupModal = document.getElementById('signup-modal');
     const loginBtn = document.getElementById('login-btn');
     const signupBtn = document.getElementById('signup-btn');
     
-    // Modal open/close handlers
-    if (loginBtn) {
-        loginBtn.addEventListener('click', () => openModal('login-modal'));
-    }
-    if (signupBtn) {
-        signupBtn.addEventListener('click', () => openModal('signup-modal'));
-    }
+    if (loginBtn) loginBtn.addEventListener('click', () => openModal('login-modal'));
+    if (signupBtn) signupBtn.addEventListener('click', () => openModal('signup-modal'));
     
-    // Close button handlers
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const modal = e.target.closest('.modal');
@@ -455,7 +322,6 @@ function initModals() {
         });
     });
     
-    // Switch between modals
     const switchToSignup = document.getElementById('switch-to-signup');
     const switchToLogin = document.getElementById('switch-to-login');
     
@@ -475,7 +341,6 @@ function initModals() {
         });
     }
     
-    // Close modal when clicking outside
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -484,16 +349,11 @@ function initModals() {
         });
     });
     
-    // Form submissions
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
     
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-    if (signupForm) {
-        signupForm.addEventListener('submit', handleSignup);
-    }
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    if (signupForm) signupForm.addEventListener('submit', handleSignup);
 }
 
 function openModal(modalId) {
@@ -522,7 +382,6 @@ async function handleLogin(e) {
         return;
     }
 
-    // Show loading state
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Signing In...';
@@ -549,7 +408,6 @@ async function handleLogin(e) {
 async function handleSignup(e) {
     e.preventDefault();
     
-    // Check if we're on a page with the expected form elements
     const nameElement = document.getElementById('signup-name');
     const emailElement = document.getElementById('signup-email');
     const userTypeElement = document.getElementById('signup-user-type');
@@ -557,7 +415,6 @@ async function handleSignup(e) {
     const passwordElement = document.getElementById('signup-password');
     const confirmPasswordElement = document.getElementById('signup-confirm');
     
-    // If elements don't exist, this function shouldn't run on this page
     if (!nameElement || !emailElement || !passwordElement) {
         console.warn('handleSignup called on page without proper form elements');
         return;
@@ -585,7 +442,6 @@ async function handleSignup(e) {
         return;
     }
 
-    // Show loading state
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Creating Account...';
@@ -615,7 +471,6 @@ async function handleSignup(e) {
 
         const data = await response.json();
         
-        // Update auth manager state
         if (window.authManager) {
             window.authManager.currentUser = data.user;
             localStorage.setItem('kunsthaus_user', JSON.stringify(data.user));
@@ -626,7 +481,6 @@ async function handleSignup(e) {
         closeModal('signup-modal');
         e.target.reset();
         
-        // Hide bio field after reset
         document.getElementById('bio-group').style.display = 'none';
         
     } catch (error) {
@@ -638,37 +492,9 @@ async function handleSignup(e) {
     }
 }
 
-// Enhanced Search Functionality
-function initSearch() {
-    const searchInput = document.getElementById('search-input');
-    const searchBtn = document.getElementById('search-submit');
-    
-    if (searchInput && searchBtn) {
-        searchBtn.addEventListener('click', performSearch);
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-    }
-}
-
-function performSearch() {
-    const searchInput = document.getElementById('search-input');
-    const searchTerm = searchInput.value.trim();
-    
-    if (searchTerm) {
-        // Redirect to search results page
-        window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
-    } else {
-        showNotification('Please enter a search term', 'info');
-    }
-}
-
 // Hero Button Actions
 document.addEventListener('DOMContentLoaded', function() {
     const exploreBtn = document.querySelector('.btn-hero');
-    const collectBtn = document.querySelector('.btn-gallery');
     
     if (exploreBtn) {
         exploreBtn.addEventListener('click', function() {
@@ -680,66 +506,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    if (collectBtn) {
-        collectBtn.addEventListener('click', function() {
-            showNotification('Registration coming soon!', 'info');
-        });
-    }
-});
-
-// Add some interactive hover effects
-document.addEventListener('DOMContentLoaded', function() {
-    // Add hover effects to artwork cards
-    const artworkCards = document.querySelectorAll('.artwork-card');
-    artworkCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-    
-    // Add hover effects to artist cards
-    const artistCards = document.querySelectorAll('.artist-card');
-    artistCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-4px)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-});
-
-// Intersection Observer for animations
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, observerOptions);
-
-// Observe elements for scroll animations
-document.addEventListener('DOMContentLoaded', function() {
-    const animatedElements = document.querySelectorAll('.artwork-card, .artist-card, .section-header');
-    
-    animatedElements.forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(el);
-    });
 });
 
 // Handle user type selection in signup form

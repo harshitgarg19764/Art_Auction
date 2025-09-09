@@ -1,34 +1,23 @@
 // Gallery Page Functionality
-
-// Gallery artworks data - will be populated from backend
 let galleryArtworks = [];
 let filteredArtworks = [];
-let displayedCount = 8;
 
-// Initialize gallery page
-document.addEventListener('DOMContentLoaded', function() {
-    loadArtworksFromBackend();
+document.addEventListener('DOMContentLoaded', function () {
+    loadGallery();
     initFilters();
-    initSearch();
-    initLoadMore();
     
-    // Auto-refresh every 30 seconds to show new artworks
-    setInterval(() => {
-        console.log('Auto-refreshing gallery...');
-        loadArtworksFromBackend();
-    }, 30000);
-    
-    // Check if we came from add-artwork page
     if (document.referrer.includes('add-artwork.html')) {
-        console.log('Came from add-artwork page, showing welcome message');
         setTimeout(() => {
             showNotification('Welcome to the gallery! Your new artwork should be visible here.', 'success');
         }, 1000);
     }
 });
 
-// Make this function globally accessible for refreshing
 window.loadArtworksFromBackend = loadArtworksFromBackend;
+
+async function loadGallery() {
+    await loadArtworksFromBackend();
+}
 
 async function loadArtworksFromBackend() {
     try {
@@ -80,7 +69,7 @@ async function loadArtworksFromBackend() {
 // getSampleArtworks function removed - no sample data needed
 
 function initGalleryGrid() {
-    displayArtworks(filteredArtworks.slice(0, displayedCount));
+    displayArtworks(filteredArtworks);
     updateResultsCount();
 }
 
@@ -171,7 +160,6 @@ function applyFilters() {
     const category = document.getElementById('category-filter').value;
     const priceRange = document.getElementById('price-filter').value;
     const status = document.getElementById('status-filter').value;
-    const searchTerm = document.getElementById('search-input').value.toLowerCase();
     
     filteredArtworks = galleryArtworks.filter(artwork => {
         // Category filter
@@ -199,75 +187,23 @@ function applyFilters() {
         // Status filter
         if (status !== 'all' && artwork.status !== status) return false;
         
-        // Search filter
-        if (searchTerm && !artwork.title.toLowerCase().includes(searchTerm) && 
-            !artwork.artist.toLowerCase().includes(searchTerm) &&
-            !artwork.description.toLowerCase().includes(searchTerm)) return false;
-        
         return true;
     });
     
-    displayedCount = Math.min(8, filteredArtworks.length);
-    displayArtworks(filteredArtworks.slice(0, displayedCount));
+    displayArtworks(filteredArtworks);
     updateResultsCount();
-    updateLoadMoreButton();
 }
 
-function initSearch() {
-    const searchInput = document.getElementById('search-input');
-    const searchBtn = document.getElementById('search-submit');
-    
-    searchInput.addEventListener('input', debounce(applyFilters, 300));
-    searchBtn.addEventListener('click', applyFilters);
-    
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            applyFilters();
-        }
-    });
-}
-
-function initLoadMore() {
-    const loadMoreBtn = document.getElementById('load-more');
-    loadMoreBtn.addEventListener('click', function() {
-        const newCount = Math.min(displayedCount + 8, filteredArtworks.length);
-        displayArtworks(filteredArtworks.slice(0, newCount));
-        displayedCount = newCount;
-        updateLoadMoreButton();
-    });
-}
 
 function updateResultsCount() {
     const resultsCount = document.getElementById('results-count');
-    const showing = Math.min(displayedCount, filteredArtworks.length);
     if (filteredArtworks.length === 0) {
         resultsCount.textContent = 'No artworks available';
     } else {
-        resultsCount.textContent = `Showing ${showing} of ${filteredArtworks.length} artworks`;
+        resultsCount.textContent = `Showing ${filteredArtworks.length} artworks`;
     }
 }
 
-function updateLoadMoreButton() {
-    const loadMoreBtn = document.getElementById('load-more');
-    if (displayedCount >= filteredArtworks.length) {
-        loadMoreBtn.style.display = 'none';
-    } else {
-        loadMoreBtn.style.display = 'inline-flex';
-    }
-}
-
-// Utility function for debouncing search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
 
 // Artwork Preview Functionality
 let currentPreviewArtwork = null;

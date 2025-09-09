@@ -2,18 +2,18 @@
 
 let auctionData = [];
 let filteredAuctions = [];
-let displayedCount = 6;
 let modalListenersSetup = false;
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Enhanced auctions page loading...');
     
-    // Check for specific artwork ID in URL parameters
+    // Check for specific artwork ID and search parameters in URL
     const urlParams = new URLSearchParams(window.location.search);
     const artworkId = urlParams.get('artwork');
+    const searchQuery = urlParams.get('search');
     
-    loadAuctionsFromBackend(artworkId);
+    loadAuctionsFromBackend(artworkId, searchQuery);
     initFilters();
     startTimers();
     setupGlobalEventListeners();
@@ -59,7 +59,7 @@ setInterval(() => {
     loadAuctionsFromBackend();
 }, 30000);
 
-async function loadAuctionsFromBackend(specificArtworkId = null) {
+async function loadAuctionsFromBackend(specificArtworkId = null, searchQuery = null) {
     console.log('Loading auctions from backend...');
     try {
         const response = await fetch('/api/auctions', {
@@ -94,27 +94,10 @@ async function loadAuctionsFromBackend(specificArtworkId = null) {
             };
         });
 
-        // If specific artwork ID is provided, scroll to and highlight it
-        if (specificArtworkId) {
+        // Handle highlighting and search notifications
+        if (specificArtworkId || searchQuery) {
             setTimeout(() => {
-                const targetCard = document.querySelector(`[onclick="handleBid(${specificArtworkId})"]`);
-                if (targetCard) {
-                    const card = targetCard.closest('.auction-card');
-                    if (card) {
-                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        card.style.border = '3px solid var(--accent)';
-                        card.style.boxShadow = '0 0 20px rgba(var(--accent-rgb), 0.3)';
-                        
-                        // Show notification
-                        showNotification(`Found artwork! Ready to place your bid.`, 'success');
-                        
-                        // Remove highlight after 3 seconds
-                        setTimeout(() => {
-                            card.style.border = '';
-                            card.style.boxShadow = '';
-                        }, 3000);
-                    }
-                }
+                handleSearchHighlight(specificArtworkId, searchQuery);
             }, 500);
         }
 
@@ -171,7 +154,7 @@ function displayAuctions() {
 
     grid.innerHTML = '';
 
-    const auctions = filteredAuctions.slice(0, displayedCount);
+    const auctions = filteredAuctions;
 
     if (auctions.length === 0) {
         // Show empty state
@@ -276,11 +259,10 @@ function startTimers() {
 function updateResultsCount() {
     const counter = document.getElementById('results-count');
     if (counter) {
-        const showing = Math.min(displayedCount, filteredAuctions.length);
         if (filteredAuctions.length === 0) {
             counter.textContent = 'No auctions available';
         } else {
-            counter.textContent = `Showing ${showing} of ${filteredAuctions.length} auctions`;
+            counter.textContent = `Showing ${filteredAuctions.length} auctions`;
         }
     }
 }
@@ -404,13 +386,32 @@ function applyFilters() {
 }
 
 function setupGlobalEventListeners() {
-    // Load more button
-    const loadMoreBtn = document.getElementById('load-more');
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', () => {
-            displayedCount += 6;
-            displayAuctions();
-        });
+    // No load more functionality needed
+}
+
+function handleSearchHighlight(artworkId, searchQuery) {
+    if (artworkId) {
+        // Find and highlight specific artwork
+        const targetCard = document.querySelector(`[onclick="handleBid(${artworkId})"]`);
+        if (targetCard) {
+            const card = targetCard.closest('.artwork-card');
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.style.border = '3px solid var(--accent)';
+                card.style.boxShadow = '0 0 20px rgba(var(--accent-rgb), 0.3)';
+                
+                showNotification(`Found artwork! Ready to place your bid.`, 'success');
+                
+                // Remove highlight after 3 seconds
+                setTimeout(() => {
+                    card.style.border = '';
+                    card.style.boxShadow = '';
+                }, 3000);
+            }
+        }
+    } else if (searchQuery) {
+        // Show search notification
+        showNotification(`Showing artworks matching "${searchQuery}"`, 'info');
     }
 }
 
